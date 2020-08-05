@@ -9,7 +9,7 @@ One other thing is Windows Shell keyboard shortcuts. It's a common struggle to f
 
 When it comes to pasting text, **DevComrade** is different from some similar applications (e.g., from the still excellent [Puretext](https://stevemiller.net/puretext/)) in that it uses [Win32 simulated input API](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput) to elaboratively feed the text into the currently active window, character-by-character. For example, it works well with Google's [Secure Shell App Chrome extension](https://chrome.google.com/webstore/detail/secure-shell-app/pnhechapfaindjhompbnflcldabbghjo?hl=en). 
 
-**DevComrade** is an open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's builT with [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.302-windows-x64-installer) and has a very minimal context-menu-style UI created with Windows Forms and native Win32 APIs. It is very much a work in progress. Some CI logic to publish a Chocolatey package including a signed executable will be implemented soon. Meanwhile, feel free to clone this repo, compile it and try it out:
+**DevComrade** is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.302-windows-x64-installer) and has a very minimalistic context-menu-style UI, created with Windows Forms and native Win32 APIs. It is still very much a work in progress. Some CI logic for publishing a Chocolatey package (including a signed executable) will be implemented soon. Meanwhile, feel free to clone this repo, compile it and try it out:
 
 ```
 dotnet publish -r win10-x64 -c Release
@@ -24,6 +24,8 @@ Once run, it shows up as bulb icon in the system tray. Try some features:
 - Copy any URL into clipboard (spaces and broken lines are OK), then press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>O</kbd> to open it in your default browser.
 
 Oh, and don't hesitate to [follow the author on Twitter](https://twitter.com/noseratio) for any updates, if interested :)
+
+<img src="./Art/menu.png" alt="DevComrade Win+F10 Menu" width="300"/>
 
 *This page will be updated soon.*
 
