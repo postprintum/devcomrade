@@ -3,17 +3,17 @@
 
 Pasting code from StackOverflow or numerous blogs can be a tedious and sometimes even a dangerous task. Did that ever happened to you, when you would paste some text into a Terminal command line, and it would instantly execute as a command, only because it had CR/LF at the end of the clipboard text? 
 
-Or, have you ever been annoyed with some broken formatting, indentation, inconsistent tabs/spaces when you paste some code into a blog post or an email message? With a typical solution to that being to fire up the good old Notepad to serve as a buffer for copy/paste.
+Or, have you ever been annoyed with broken formatting, indentation, inconsistent tabs/spaces when you pasted code into a blog post or an email message? With a typical solution to that to use the good old Notepad as a buffer for copy/paste.
 
-One other thing is Windows Shell custom keyboard shortcuts. It's a common struggle to find a convenient hotkey combination that still can be assigned to run a custom app. E.g., it's impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed (of course, we can run `taskkill /im ApplicationFrameHost.exe /f` to [fix that](https://superuser.com/a/961761), if we dare).
+One other thing is Windows Shell custom keyboard shortcuts. It is a common struggle to find a convenient hotkey combination that still can be assigned to run a custom app. E.g., it's impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed (of course, we can run `taskkill /im ApplicationFrameHost.exe /f` to [fix that](https://superuser.com/a/961761), if we dare).
 
 **DevComrade** is aimed to solve these problems. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples).
 
-When it comes to pasting text, **DevComrade** is different from some similar utilities (e.g., from the still excellent [Puretext](https://stevemiller.net/puretext/)) in that it uses [Win32 simulated input API](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput) to elaboratively feed the text into the currently active window, character-by-character, as though it was actually typed by a person. For example, it works well with Google's [Secure Shell App Chrome extension](https://chrome.google.com/webstore/detail/secure-shell-app/pnhechapfaindjhompbnflcldabbghjo?hl=en). 
+When it comes to pasting text, **DevComrade** is different from many similar utilities (e.g., from still excellent [Puretext](https://stevemiller.net/puretext/)) in that it uses [Win32 simulated input API](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput) to elaboratively feed the text into the currently active window, character by character, as though it was typed by a person. For example, it works well with Google's [Secure Shell App Chrome extension](https://chrome.google.com/webstore/detail/secure-shell-app/pnhechapfaindjhompbnflcldabbghjo?hl=en).
 
 **DevComrade** is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.302-windows-x64-installer) and uses Windows Forms for its very simple, context-menu-style UI. 
 
-It is still very much a work in progress. Some CI logic for publishing a Chocolatey package (including a signed executable) will be implemented soon. 
+It is still very much a work in progress. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will be implemented soon and this page will be updated. 
 
 Meanwhile, feel free to clone this repo, compile it and try it out:
 
@@ -29,11 +29,9 @@ Once run, it shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" hei
 - Press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>E</kbd> to open Windows Terminal then <kbd>Win</kbd>+<kbd>Ins</kbd> to paste the Clipboard's content as a single line of text. It won't get executed until your press <kbd>Enter</kbd>.
 - Copy any URL into clipboard (e.g., from a console window output, spaces and broken lines are OK), then press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>O</kbd> to open it in your default web browser.
 
-Oh, and don't hesitate to [follow the author on Twitter](https://twitter.com/noseratio) for any updates, if interested :)
+Oh, and don't hesitate to [follow the author on Twitter](https://twitter.com/noseratio) for any updates or to provide a feedback, if interested.
 
 <img src="./Art/menu.png" alt="DevComrade Win+F10 Menu" width="300"/>
-
-*This page will be updated soon.*
 
 <!---
 # Getting Started
