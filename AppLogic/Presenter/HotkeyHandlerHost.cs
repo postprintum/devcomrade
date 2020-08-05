@@ -565,7 +565,10 @@ namespace AppLogic.Presenter
             {
                 // show the menu and await its dismissal
                 using var @lock = await WithLockAsync();
-                using var threadInputScope = AttachedThreadInputScope.Create();
+
+                // set thread focus to the menu window
+                await InputHelpers.TimerYield(token: this.Token);
+                WinApi.SetForegroundWindow(this.Menu.Handle);
 
                 var tcs = new TaskCompletionSource<DBNull>(TaskCreationOptions.RunContinuationsAsynchronously);
                 using var rego = this.Token.Register(() => tcs.TrySetCanceled());
@@ -575,23 +578,8 @@ namespace AppLogic.Presenter
                     handler => this.Menu.Closed += handler,
                     handler => this.Menu.Closed -= handler);
 
-                // set thread focus to the menu
-                WinApi.SetForegroundWindow(this.Menu.Handle);
-                try
-                {
-                    this.Menu.Show(Cursor.Position);
-                    await tcs.Task;
-                }
-                finally
-                {
-                    // restore focus to the previously focused window
-                    if (WinApi.IsWindow(threadInputScope.ForegroundWindow) &&
-                        Utilities.IsDescendant(this.Menu.Handle, WinApi.GetForegroundWindow()) &&
-                        !Utilities.IsDescendant(this.Menu.Handle, threadInputScope.ForegroundWindow))
-                    {
-                        WinApi.SetForegroundWindow(threadInputScope.ForegroundWindow);
-                    }
-                }
+                this.Menu.Show(Cursor.Position);
+                await tcs.Task;
             }
 
             showMenuAsync().IgnoreCancellations();

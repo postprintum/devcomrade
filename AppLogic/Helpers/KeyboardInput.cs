@@ -11,6 +11,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace AppLogic.Helpers
 {
@@ -35,32 +36,61 @@ namespace AppLogic.Helpers
                 (extended ? WinApi.KEYEVENTF_EXTENDEDKEY : 0) | WinApi.KEYEVENTF_KEYUP, 0);
         }
 
-        // ignore some toogle keys (CapsLock etc) when we check if all keys are de-pressed
-        private static readonly int[] s_toogleKeys = 
-        { 
-            // https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-            WinApi.VK_NUMLOCK, WinApi.VK_SCROLL, WinApi.VK_CAPITAL,
-            0xE7, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1F, 0xFF
-        };
+        private static int[] AllKeys => s_allKeys.Value;
+
+        private static Lazy<int[]> s_allKeys = new Lazy<int[]>(() =>
+        {
+            // ignore some toogle keys (CapsLock etc) when we check if all keys are de-pressed
+            var toogleKeys = new[]
+            {
+                // https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+                WinApi.VK_NUMLOCK, WinApi.VK_SCROLL, WinApi.VK_CAPITAL, WinApi.VK_ESCAPE,
+                0xE7, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1F, 0xFF
+            };
+            return Enumerable.Range(1, 256).Where(key => !toogleKeys.Contains(key)).ToArray();
+        }, LazyThreadSafetyMode.None);
+
+        public static bool IsKeyPressed(int key)
+        {
+            return (WinApi.GetAsyncKeyState(key) & 0x8000) != 0; 
+        }
 
         public static bool IsAnyKeyPressed()
         {
-            return (Enumerable.Range(1, 256).Any(key =>
-                !s_toogleKeys.Contains(key) &&
-                (WinApi.GetAsyncKeyState(key) & 0x8000) != 0));
+            return AllKeys.Any(key => IsKeyPressed(key));
+        }
+
+        private static void ClearKeyboardState()
+        {
+            foreach (var key in AllKeys)
+            {
+                if (IsKeyPressed(key))
+                {
+                    SimulateKeyUp((uint)key);
+                    SimulateKeyUp((uint)key, extended: true);
+                }
+            }
         }
 
         public static async Task WaitForAllKeysReleasedAsync(CancellationToken token)
         {
-            token.ThrowIfCancellationRequested();
-
-            while (IsAnyKeyPressed())
+            await s_asyncLock.WaitAsync(token);
+            try
             {
-                if ((WinApi.GetAsyncKeyState(WinApi.VK_ESCAPE) & 0x8000) != 0)
+                ClearKeyboardState();
+
+                while (IsAnyKeyPressed())
                 {
-                    throw new TaskCanceledException();
+                    if (IsKeyPressed(WinApi.VK_ESCAPE))
+                    {
+                        throw new TaskCanceledException();
+                    }
+                    await InputHelpers.InputYield(QS_KEYBOARD, KEYBOARD_POLL_DELAY, token);
                 }
-                await InputHelpers.InputYield(QS_KEYBOARD, KEYBOARD_POLL_DELAY, token);
+            }
+            finally
+            {
+                s_asyncLock.Release();
             }
         }
 

@@ -188,6 +188,9 @@ namespace AppLogic.Helpers
         [DllImport("user32.dll")]
         public static extern short GetKeyState(int vKey);
 
+        [DllImport("user32.dll")]
+        public static extern bool SetKeyboardState(byte[] lpKeyState);
+
         [DllImport("kernel32.dll")]
         public static extern uint GetCurrentProcessId();
 
