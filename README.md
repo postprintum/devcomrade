@@ -16,7 +16,11 @@ dotnet publish -r win-x64 -c Release
 ```
 Then run `.\DevComrade\bin\Release\netcoreapp3.1\DevComrade.exe`
 
-Once run, it shows up as bulb icon in the system tray. Press <kbd>Win</kbd>+<kbd>F10</kbd> to see the list of the available shortcuts and actions. 
+Once run, it shows up as bulb icon in the system tray. Try some features:
+
+- Press <kbd>Win</kbd>+<kbd>F10</kbd> to see the list of the available shortcuts and actions.
+- Copy some code into Clipboard and try <kbd>Alt</kbd>+<kbd>Ins</kbd> to paste into the internal Notepad. 
+- Press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>E</kbd> to open Windows Terminal then <kbd>Win</kbd>+<kbd>Ins</kbd> to paste the Clipboard's content as a single line of text. It won't get executed until your press <kbd>Enter</kbd>.
 
 Oh, and don't hesitate to [follow the author on Twitter](https://twitter.com/noseratio) for any updates, if interested :)
 
