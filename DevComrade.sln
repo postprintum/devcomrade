@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevComrade", "DevComrade\DevComrade.csproj", "{A6209C54-D95A-4605-960F-1CC94BDC3599}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppLogic", "AppLogic\AppLogic.csproj", "{F2BC7416-696D-445C-A55D-ABC88C397839}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{200C7D25-E77C-4249-B17E-467F2216D556}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6209C54-D95A-4605-960F-1CC94BDC3599}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6209C54-D95A-4605-960F-1CC94BDC3599}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6209C54-D95A-4605-960F-1CC94BDC3599}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6209C54-D95A-4605-960F-1CC94BDC3599}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2BC7416-696D-445C-A55D-ABC88C397839}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2BC7416-696D-445C-A55D-ABC88C397839}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2BC7416-696D-445C-A55D-ABC88C397839}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2BC7416-696D-445C-A55D-ABC88C397839}.Release|Any CPU.Build.0 = Release|Any CPU
+		{200C7D25-E77C-4249-B17E-467F2216D556}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{200C7D25-E77C-4249-B17E-467F2216D556}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{200C7D25-E77C-4249-B17E-467F2216D556}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{200C7D25-E77C-4249-B17E-467F2216D556}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A126A440-E94A-4AEE-A6C9-E113B4D3817D}
+	EndGlobalSection
+EndGlobal
