@@ -12,8 +12,9 @@ When it comes to pasting text, **DevComrade** is different from some similar app
 **DevComrade** is an open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's build with [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.302-windows-x64-installer) and has a very minimal menu UI using Windows Forms and native Win32 APIs. It is very much a work in progress. Some CI logic to publish a Chocolatey with a signed executable will be implemented soon. Meanwhile, feel free to clone this repo, compile it and try it out:
 
 ```
-dotnet publish -c Release -r win10-x64 --self-contained true -p:PublishSingleFile=false -p:PublishTrimmed=true
+dotnet publish -r win-x64 -c Release
 ```
+Then run `.\DevComrade\bin\Release\netcoreapp3.1\DevComrade.exe`
 
 Once run, it shows up as bulb icon in the system tray. Press <kbd>Win</kbd>+<kbd>F10</kbd> to see the list of the available shortcuts and actions. 
 
