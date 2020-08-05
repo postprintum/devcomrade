@@ -6,8 +6,7 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -18,15 +17,20 @@ namespace AppLogic.Helpers
         private static readonly ThreadLocal<IDisposable?> s_current = 
             new ThreadLocal<IDisposable?>();
 
+        private const int DELAY = 500;
+
         private bool IsCurrent => s_current.Value == this;
 
         private readonly Func<bool>? _showWhen;
         private readonly Cursor? _oldCursor;
         private readonly System.Windows.Forms.Timer? _timer;
+        private readonly Stopwatch _stopwatch = new Stopwatch();
 
         private void OnIdle(object? s, EventArgs e)
         {
-            if (this.IsCurrent && _showWhen?.Invoke() != false)
+            if (this.IsCurrent && 
+                _showWhen?.Invoke() != false &&
+                _stopwatch.ElapsedMilliseconds >= DELAY)
             {
                 Cursor.Current = Cursors.AppStarting;
             }
@@ -37,13 +41,13 @@ namespace AppLogic.Helpers
             s_current.Value?.Dispose();
             s_current.Value = this;
 
+            _stopwatch.Start();
             _oldCursor = Cursor.Current;
             _showWhen = showWhen;
             _timer = new System.Windows.Forms.Timer { Interval = 250 };
             _timer.Tick += OnIdle;
             _timer.Start();
             Application.Idle += OnIdle;
-            Application.RaiseIdle(EventArgs.Empty);
         }
 
         public void Stop()

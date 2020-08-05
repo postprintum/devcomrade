@@ -35,7 +35,7 @@ namespace AppLogic.Presenter
             this.Text = $"{Application.ProductName} Notepad";
             this.ShowInTaskbar = false;
             this.Padding = new Padding(3);
-            this.Icon = System.Drawing.Icon.ExtractAssociatedIcon(Diagnostics.GetExecutablePath());
+            this.Icon = Icon.ExtractAssociatedIcon(Diagnostics.GetExecutablePath());
 
             var workingArea = Screen.PrimaryScreen.WorkingArea;
             this.StartPosition = FormStartPosition.Manual;

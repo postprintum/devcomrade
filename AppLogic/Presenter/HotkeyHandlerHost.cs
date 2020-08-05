@@ -308,9 +308,9 @@ namespace AppLogic.Presenter
         }
         private void OpenNotepad()
         {
-            using var threadInputScope = AttachedThreadInputScope.Create();
             if (this.Notepad.Visible)
             {
+                using var threadInputScope = AttachedThreadInputScope.Create();
                 WinApi.SetForegroundWindow(Notepad.Handle);
             }
             else
