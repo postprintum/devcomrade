@@ -9,7 +9,7 @@ One other thing is Windows Shell keyboard shortcuts. It's a common struggle to f
 
 When it comes to pasting text, **DevComrade** is different from some similar applications (e.g., from still excellent [Puretext](https://stevemiller.net/puretext/)) in that it uses [Win32 simulated input API](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput) to elaboratively feed the text to the currently active window, character-by-character.
 
-**DevComrade** is an open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's build with [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.302-windows-x64-installer) and has a very minimal menu UI using Windows Forms and native Win32 APIs. It is very much a work in progress. Some CI logic to publish a Chocolatey with a signed executable will be implemented soon. Meanwhile, feel free to clone this repo, compile it and try it out:
+**DevComrade** is an open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's build with [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.302-windows-x64-installer) and has a very minimal menu UI done with Windows Forms and native Win32 APIs. It is very much a work in progress. Some CI logic to publish a Chocolatey package with including a signed executable will be implemented soon. Meanwhile, feel free to clone this repo, compile it and try it out:
 
 ```
 dotnet publish -r win-x64 -c Release
@@ -21,6 +21,7 @@ Once run, it shows up as bulb icon in the system tray. Try some features:
 - Press <kbd>Win</kbd>+<kbd>F10</kbd> to see the list of the available shortcuts and actions.
 - Copy some code into Clipboard and try <kbd>Alt</kbd>+<kbd>Ins</kbd> to paste into the internal Notepad. 
 - Press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>E</kbd> to open Windows Terminal then <kbd>Win</kbd>+<kbd>Ins</kbd> to paste the Clipboard's content as a single line of text. It won't get executed until your press <kbd>Enter</kbd>.
+- Copy any URL into clipboard (spaces and broken lines are OK), then press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>O</kbd> to open it in your default browser.
 
 Oh, and don't hesitate to [follow the author on Twitter](https://twitter.com/noseratio) for any updates, if interested :)
 
