@@ -28,10 +28,13 @@ namespace AppLogic.Helpers
         public static string TrimTrailingEmptyLines(this string @this)
         {
             var regex = new Regex(@"^\s*$", RegexOptions.Singleline);
+
             var lines = @this.Split('\n')
-                .SkipWhile(s => regex.IsMatch(s))
-                .TakeWhile(s => !regex.IsMatch(s))
-                .Select(s => s.TrimEnd());
+                .SkipWhile(l => regex.IsMatch(l))
+                .Reverse()
+                .SkipWhile(l => regex.IsMatch(l))
+                .Reverse();
+
             return String.Join('\n', lines);
         }
 
