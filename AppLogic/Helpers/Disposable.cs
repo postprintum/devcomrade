@@ -8,8 +8,6 @@
 using System;
 using System.Threading.Tasks;
 
-#nullable enable
-
 namespace AppLogic.Helpers
 {
     /// <summary>
