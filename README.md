@@ -1,9 +1,11 @@
 # Introduction 
-**DevComrade** is a Windows copy/paste and launcher productivity tool for developers. 
+**DevComrade** is a Windows copy/paste/launch productivity improvement tool for developers. 
 
-Pasting code from StackOverflow or numerous blogs can be a tedious and sometimes even a dangerous task. Did that ever happened to you, when you would past some text into a Terminal command line, and it would instantly execute as a command, only because it had CR/LF at the end of the clipboard text? Or, have you ever been annoyed with some broken formatting, indentation, inconsistent tabs/spaces when you paste some code into a blog post or an email message? With a typical solution to that being to fire up Windows Notepad and use it as a buffer for copy/paste?
+Pasting code from StackOverflow or numerous blogs can be a tedious and sometimes even a dangerous task. Did that ever happened to you, when you would paste some text into a Terminal command line, and it would instantly execute as a command, only because it had CR/LF at the end of the clipboard text? 
 
-One other thing is Windows Shell custom keyboard shortcuts. It's a common struggle to find a convenient hotkey combination that still can be assigned to run a custom app (e.g., it's impossible to use <kbd>Win</kbd>+<kbd>Shift | Alt | Ctrl</kbd>+<kbd>Key</kbd> combos). And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed. 
+Or, have you ever been annoyed with some broken formatting, indentation, inconsistent tabs/spaces when you paste some code into a blog post or an email message? With a typical solution to that being to fire up the good old Notepad to serve as a buffer for copy/paste.
+
+One other thing is Windows Shell custom keyboard shortcuts. It's a common struggle to find a convenient hotkey combination that still can be assigned to run a custom app. E.g., it's impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed (of course, we can run `taskkill /im ApplicationFrameHost.exe /f` to [fix that](https://superuser.com/a/961761), if we dare).
 
 **DevComrade** is aimed to solve these problems. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples).
 
