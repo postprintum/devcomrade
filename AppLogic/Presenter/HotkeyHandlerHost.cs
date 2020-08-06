@@ -282,9 +282,15 @@ namespace AppLogic.Presenter
         const string FEEDBACK_URL = "https://www.postprintum.com/devcomrade/feedback/";
         const string ABOUT_URL = "https://www.postprintum.com/devcomrade/";
 
+        private delegate void MenuItemEventHandler(object s, EventArgs e);
+
+        private delegate bool? MenuItemStateCallback();
+
         private static void About(object? s, EventArgs e) => Diagnostics.ShellExecute(ABOUT_URL);
 
-        private static void Nop(object? s, EventArgs e) { }
+        private static void None(object? s, EventArgs e) { }
+
+        private static bool? None() => null;
 
         private static void Feedback(object? s, EventArgs e) => Diagnostics.ShellExecute(FEEDBACK_URL);
 
@@ -368,17 +374,18 @@ namespace AppLogic.Presenter
         {
             Quit();
         }
-        #endregion
 
-        private static (string, EventHandler) GetSeparatorMenuItem()
+        private static (string, (MenuItemEventHandler, MenuItemStateCallback)) GetSeparatorMenuItem()
         {
-            return ("-", Nop);
+            return ("-", (None, None));
         }
+
+        #endregion
 
         /// <summary>
         /// Provide tray menu items
         /// </summary>
-        private IEnumerable<(string, EventHandler)> GetMenuItems()
+        private IEnumerable<(string, (MenuItemEventHandler, MenuItemStateCallback))> GetMenuItems()
         {
             // first add hotkey handlers which also have menuItem in the config file
             var handlers = _handlersByHotkeyNameMap.Values
@@ -402,7 +409,7 @@ namespace AppLogic.Presenter
                     }
 
                     yield return (menuItemText, 
-                        (s, e) => HandleHotkeyAsync(handler).IgnoreCancellations());
+                        ((s, e) => HandleHotkeyAsync(handler).IgnoreCancellations(), None));
 
                     if (hotkey.AddSeparator)
                     {
@@ -412,21 +419,21 @@ namespace AppLogic.Presenter
                 yield return GetSeparatorMenuItem();
             }
 
-            yield return ("Auto Start", AutoStart);
-            yield return ("Edit Local Config", EditLocalConfig);
-            yield return ("Edit Roaming Config", EditRoamingConfig);
-            yield return ("Restart", Restart);
+            yield return ("Auto Start", (AutoStart, () => IsAutorun()));
+            yield return ("Edit Local Config", (EditLocalConfig, None));
+            yield return ("Edit Roaming Config", (EditRoamingConfig, None));
+            yield return ("Restart", (Restart, None));
             if (!Diagnostics.IsAdmin())
             {
-                yield return ("Restart as Admin", RestartAsAdmin);
+                yield return ("Restart as Admin", (RestartAsAdmin, None));
             }
-            yield return ("Prevent Sleep Mode", Feedback);
+            yield return ("Prevent Sleep Mode", (Feedback, None));
             yield return GetSeparatorMenuItem();
-            yield return ($"About {Application.ProductName}", About);
-            yield return ("E&xit", Exit);
+            yield return ($"About {Application.ProductName}", (About, None));
+            yield return ("E&xit", (Exit, None));
         }
 
-        EventHandler AsAsync(EventHandler handler)
+        private EventHandler AsAsync(MenuItemEventHandler handler)
         {
             // we make all click handlers async because 
             // we want the menu to be dismissed first
@@ -446,7 +453,7 @@ namespace AppLogic.Presenter
         {
             var contextMenu = new ContextMenuStrip();
 
-            foreach (var (text, handler) in GetMenuItems())
+            foreach (var (text, (handler, queryState)) in GetMenuItems())
             {
                 if (text == "-")
                 {
@@ -464,6 +471,11 @@ namespace AppLogic.Presenter
                     }
                     var menuItem = new ToolStripMenuItem(left, image: null, AsAsync(handler));
                     menuItem.ShortcutKeyDisplayString = right;
+                    var state = queryState();
+                    if (state.HasValue)
+                    {
+                        menuItem.Checked = state.Value;
+                    }
                     contextMenu.Items.Add(menuItem);
                 }
             }
