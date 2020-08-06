@@ -3,9 +3,9 @@
 
 Pasting code from StackOverflow or numerous blogs can be a tedious and sometimes even a dangerous task. Did that ever happened to you, when you would paste some text into a Terminal command line, and it would instantly execute as a command, only because it had CR/LF at the end of the clipboard text? 
 
-Or, have you ever been annoyed with broken formatting, indentation, inconsistent tabs/spaces when you pasted code into a blog post or an email message? With a typical solution to that to use the good old Notepad as a buffer for copy/paste.
+Or, have you ever been annoyed with broken formatting, indentation, inconsistent tabs/spaces when you pasted code into a blog post or an email message? With a typical workaround to use the good old Notepad as a buffer for copy/paste.
 
-One other thing is Windows Shell custom keyboard shortcuts. It is a common struggle to find a convenient hotkey combination that still can be assigned to run a custom app. E.g., it's impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed (of course, we can run `taskkill /im ApplicationFrameHost.exe /f` to [fix that](https://superuser.com/a/961761), if we dare).
+One other thing is Windows Shell custom keyboard shortcuts. It is a common struggle to find a convenient hotkey combination that still can be assigned to run a custom app. E.g., it is impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed (of course, we can run `taskkill /im ApplicationFrameHost.exe /f` to [fix that](https://superuser.com/a/961761), if we dare).
 
 **DevComrade** is aimed to solve these problems. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples).
 
@@ -15,12 +15,14 @@ When it comes to pasting text, **DevComrade** is different from many similar uti
 
 It is still very much a work in progress. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will be implemented soon and this page will be updated. 
 
-Meanwhile, feel free to clone this repo, compile it and try it out:
+Meanwhile, **feel free to clone this repo, compile it and try it out**:
 
 ```
+mkdir DevComradeRepo && cd DevComradeRepo
+git clone https://github.com/postprintum/devcomrade .
 dotnet publish -r win10-x64 -c Release
+start .\DevComrade\bin\Release\netcoreapp3.1\win10-x64\DevComrade.exe
 ```
-Then run `.\DevComrade\bin\Release\netcoreapp3.1\win10-x64\DevComrade.exe`
 
 Once run, it shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" height="16"/> icon in the system tray. Some of the features to try out:
 
