@@ -20,6 +20,9 @@ namespace AppLogic.Presenter
 {
     internal class PredefinedHotkeyHandlers: IHotkeyHandlerProvider
     {
+        /// <summary>
+        /// Predefined handlers are decorated with [HotkeyHandler]
+        /// </summary>
         public class HotkeyHandlerAttribute : Attribute
         {
         }
@@ -56,7 +59,7 @@ namespace AppLogic.Presenter
         }
 
         /// <summary>
-        /// Remove formatting, CR/LFs, tabs and paste by simulating typing
+        /// Remove formatting and paste as single line
         /// </summary>
         [HotkeyHandler]
         public async Task PasteAsSingleLine(Hotkey _, CancellationToken token)
@@ -71,7 +74,7 @@ namespace AppLogic.Presenter
         }
 
         /// <summary>
-        /// Remove formatting, CR/LFs, tabs and paste by simulating typing
+        /// Remove formatting and paste unindented
         /// </summary>
         [HotkeyHandler]
         public async Task PasteUnindented(Hotkey _, CancellationToken token)
@@ -89,7 +92,7 @@ namespace AppLogic.Presenter
         /// Remove formatting, CR/LFs, tabs and paste by simulating typing
         /// </summary>
         [HotkeyHandler]
-        public async Task PasteUnindentedUntabbified(Hotkey _, CancellationToken token)
+        public async Task PasteUnindentedUntabified(Hotkey _, CancellationToken token)
         {
             var tabSize = Host.TabSize;
 
@@ -105,7 +108,7 @@ namespace AppLogic.Presenter
         }
 
         /// <summary>
-        /// Remove formatting and trailing CR/LFs in clipboard in-place
+        /// Paste to the internal Notepad
         /// </summary>
         [HotkeyHandler]
         public Task PasteToNotepad(Hotkey _, CancellationToken token)
@@ -159,7 +162,7 @@ namespace AppLogic.Presenter
         }
 
         /// <summary>
-        /// Run Windows Terminal at the current folder
+        /// Run VS Code at the current folder
         /// </summary>
         [HotkeyHandler]
         public Task RunVSCode(Hotkey _, CancellationToken token)
@@ -179,7 +182,7 @@ namespace AppLogic.Presenter
         }
 
         /// <summary>
-        /// Starts Windows Terminal at the current folder
+        /// Show the main menu
         /// </summary>
         [HotkeyHandler]
         public Task ShowMenu(Hotkey _, CancellationToken token)
@@ -189,7 +192,7 @@ namespace AppLogic.Presenter
         }
 
         /// <summary>
-        /// Remove formatting, CR/LFs, tabs and paste by simulating typing
+        /// Invoke Windows' PresentationSettings.exe
         /// </summary>
         [HotkeyHandler]
         public Task PresentationSettings(Hotkey _, CancellationToken token)
@@ -201,7 +204,7 @@ namespace AppLogic.Presenter
         }
 
         /// <summary>
-        /// Opens Internal Notepad
+        /// Show the internal Notepad
         /// </summary>
         [HotkeyHandler]
         public Task OpenNotepad(Hotkey _, CancellationToken token)
