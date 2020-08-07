@@ -1,5 +1,5 @@
 ﻿@cd %~dp0
-pwsh -f make.ps1
+dotnet publish -r win10-x64 -c Release ..\
 @if errorlevel 1 goto :error
 start ..\DevComrade\bin\Release\netcoreapp3.1\win10-x64\DevComrade.exe
 @goto :ok
