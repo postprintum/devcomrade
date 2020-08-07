@@ -1,7 +1,7 @@
 # Introduction 
 **DevComrade** is a Windows copy/paste/run productivity improvement tool for developers. 
 
-Copy-pasting from the online docs, StackOverflow or numerous blogs can be a tedious and sometimes even a dangerous task.<br>Does the following sound familiar: you paste some text from a web page into a Terminal command line, and it gets executed immediately, before you even had a chance to edit it? Only because there was a CR/LF character at the end of the clipboard text.
+Copy-pasting from the online docs, StackOverflow or numerous blogs can be a tedious and sometimes even a dangerous task. Does the following sound familiar: you paste some text from a web page into a Terminal command line, and it gets executed immediately, before you even had a chance to edit it? Only because there was a CR/LF character at the end of the clipboard text.
 
 Or, have you ever been annoyed with broken formatting, indentation, inconsistent tabs/spaces when you paste a piece of code into VS Code, a blog post or an email message? A typical workaround for that is to use the good old `Notepad.exe` as a buffer.
 
