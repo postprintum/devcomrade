@@ -1,30 +1,41 @@
 # Introduction 
 **DevComrade** is a Windows copy/paste/run productivity improvement tool for developers. 
 
-Pasting code from StackOverflow or numerous blogs can be a tedious and sometimes even a dangerous task. Did that ever happen to you, when you would paste some text into a Terminal command line, and it would instantly execute as a command, only because it had CR/LF at the end of the clipboard text? 
+Copy-pasting from the online docs, StackOverflow or numerous blogs can be a tedious and sometimes even a dangerous task.<br>Does the following sound familiar: you paste some text from a web page into a Terminal command line, and it gets executed immediately, before you even had a chance to edit it? Only because there was a CR/LF character at the end of the clipboard text.
 
-Or, have you ever been annoyed with broken formatting, indentation, inconsistent tabs/spaces when you paste a piece of code into a blog, chat or an email message? With a typical workaround for that to use the good old `Notepad.exe` as a buffer for copy-pasting.
+Or, have you ever been annoyed with broken formatting, indentation, inconsistent tabs/spaces when you paste a piece of code into VS Code, a blog post or an email message? A typical workaround for that is to use the good old `Notepad.exe` as a buffer.
 
-One other problematic thing I often used to deal with is Windows Shell custom keyboard shortcuts. It is a common struggle to find a convenient hotkey combination that still can be assigned to run a custom app. E.g., it is impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed (of course, we can run `taskkill /im ApplicationFrameHost.exe /f` to [fix that](https://superuser.com/a/961761), if we dare).
+Now I have two decicated hotkeys for that, **<kbd>Win</kbd>+<kbd>Ins</kbd> (paste as single line) and <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Ins</kbd> (paste as multiple lines)**, which work uniformly across all apps and browsers and remove the trailing empty lines and the last CR/LF ending.
 
-**DevComrade** is aimed to solve these problems. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples).
+One other source of disappointment for me has always been how custom keyboard shortcuts are supported in Windows. It is a common struggle to find a convenient hotkey combination that still can be assigned to start a custom app. E.g., it is impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed (of course, we can run `taskkill /im ApplicationFrameHost.exe /f` to [fix that](https://superuser.com/a/961761), if we dare).
+
+**DevComrade** was made to solve this problem, too. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples) in the `.config` file.
 
 When it comes to pasting text, **DevComrade** is different from many similar utilities (e.g., from the still-excellent [Puretext](https://stevemiller.net/puretext/)) in how it uses [Win32 simulated input API](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput) to elaboratively feed the text into the currently active window, character by character, as though it was typed by a person. For example, it works well with Google's [Secure Shell App Chrome extension](https://chrome.google.com/webstore/detail/secure-shell-app/pnhechapfaindjhompbnflcldabbghjo?hl=en).
 
-**DevComrade** is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/thank-you/sdk-3.1.302-windows-x64-installer) and uses Windows Forms for its very simple, context-menu-style UI. 
+**DevComrade** is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.1) and uses Windows Forms for its very simple, context-menu-style UI. 
 
 It is still very much a work in progress. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will be implemented soon and this page will be updated. 
 
 Meanwhile, **feel free to clone this repo, compile it and try it out**:
 
-```
-mkdir DevComradeRepo && cd DevComradeRepo
-git clone https://github.com/postprintum/devcomrade .
-dotnet publish -r win10-x64 -c Release
-start .\DevComrade\bin\Release\netcoreapp3.1\win10-x64\DevComrade.exe
-```
+- Download and install [.NET Core 3.1 SDK](https://download.visualstudio.microsoft.com/download/pr/56b00a71-686f-4f27-9ad1-9b30308688ed/1fa023326e475813783a240532c9f2c8/dotnet-sdk-3.1.302-win-x64.exe), if you haven't got it already.
 
-Once run, it shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" height="16"/> icon in the system tray. Some of the features to try out:
+- Clone the repo to a folder of your choice, e.g.:
+    ```
+    mkdir DevComradeRepo && cd DevComradeRepo
+    git clone https://github.com/postprintum/devcomrade .
+    ```
+- Build and run:
+    ```
+    .\Package\make-and-run.bat
+    ```
+- Or do it manually:
+    ```
+    dotnet publish -r win10-x64 -c Release
+    start .\DevComrade\bin\Release\netcoreapp3.1\win10-x64\DevComrade.exe
+    ```
+Once run, DevComrade shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" height="16"/> icon in the system tray. Some of the features to try out:
 
 - Press <kbd>Win</kbd>+<kbd>F10</kbd> to see the list of the available shortcuts and actions.
 - Copy some code into the Clipboard and try <kbd>Alt</kbd>+<kbd>Ins</kbd>, to paste it into the internal Notepad pop-up window. Hit <kbd>Esc</kbd> to simply hide it when finished, or <kbd>Win</kbd>+<kbd>&#x5c;</kbd> to open it again.
