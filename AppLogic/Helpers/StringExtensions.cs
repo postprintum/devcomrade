@@ -19,10 +19,16 @@ namespace AppLogic.Helpers
             return regex.Replace(@this, replacement);
         }
 
-        public static string NormalizeLineEndings(this string @this)
+        public static string UnixifyLineEndings(this string @this)
         {
             // use only "\n" for line breaks
             return Regex.Replace(@this, @"(\r\n)|(\n\r)|(\r)", "\n", RegexOptions.Singleline);
+        }
+
+        public static string WindowsifyLineEndings(this string @this)
+        {
+            // use "\r\n" for line breaks
+            return @this.Replace("\n", Environment.NewLine);
         }
 
         public static string TrimTrailingEmptyLines(this string @this)

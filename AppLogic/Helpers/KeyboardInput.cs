@@ -125,10 +125,20 @@ namespace AppLogic.Helpers
                             break;
                         }
 
-                        CharToKeyboardInput(c, ref input[0]);
-                        if (WinApi.SendInput((uint)input.Length, input, size) == 0)
+                        if (c == '\n' || c == '\r')
                         {
-                            break;
+                            // we need this for correctly handling line breaks
+                            // when pasting into Chromium's <textarea> 
+                            SimulateKeyDown(WinApi.VK_RETURN);
+                            SimulateKeyUp(WinApi.VK_RETURN);
+                        }
+                        else
+                        {
+                            CharToKeyboardInput(c, ref input[0]);
+                            if (WinApi.SendInput((uint)input.Length, input, size) == 0)
+                            {
+                                break;
+                            }
                         }
 
                         if (InputHelpers.AnyInputMessage(WinApi.QS_ALLINPUT))
