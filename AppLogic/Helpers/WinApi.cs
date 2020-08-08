@@ -31,6 +31,7 @@ namespace AppLogic.Helpers
         public const int VK_LCONTROL = 0xA2;
         public const int VK_RCONTROL = 0xA3;
         public const int VK_ESCAPE = 0x1B;
+        public const int VK_RETURN = 0x0D;
 
         public const int VK_A = 0x41;
 

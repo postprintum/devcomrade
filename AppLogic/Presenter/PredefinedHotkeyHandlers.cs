@@ -50,7 +50,7 @@ namespace AppLogic.Presenter
         public async Task PasteUnformatted(Hotkey _, CancellationToken token)
         {
             var text = GetClipboardText()
-                .NormalizeLineEndings()
+                .UnixifyLineEndings()
                 .TrimTrailingEmptyLines()
                 .TrimEnd();
 
@@ -65,7 +65,7 @@ namespace AppLogic.Presenter
         public async Task PasteAsSingleLine(Hotkey _, CancellationToken token)
         {
             var text = GetClipboardText()
-                .NormalizeLineEndings()
+                .UnixifyLineEndings()
                 .TrimTrailingEmptyLines()
                 .ConvertToSingleLine();
 
@@ -80,7 +80,7 @@ namespace AppLogic.Presenter
         public async Task PasteUnindented(Hotkey _, CancellationToken token)
         {
             var text = GetClipboardText()
-                .NormalizeLineEndings()
+                .UnixifyLineEndings()
                 .TrimTrailingEmptyLines()
                 .Unindent();
 
@@ -97,7 +97,7 @@ namespace AppLogic.Presenter
             var tabSize = Host.TabSize;
 
             var text = GetClipboardText()
-                .NormalizeLineEndings()
+                .UnixifyLineEndings()
                 .TrimTrailingEmptyLines()
                 .TabifyStart(tabSize)
                 .UntabifyStart(tabSize)
