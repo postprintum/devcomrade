@@ -5,6 +5,7 @@
 
 #nullable enable
 
+using AppLogic.Helpers;
 using AppLogic.Models;
 using System;
 using System.Configuration;
@@ -26,7 +27,7 @@ namespace AppLogic.Config
                 void throwFormatException() => throw new FormatException(node.OuterXml);
 
                 var name = node.Attributes["name"]?.Value;
-                if (String.IsNullOrWhiteSpace(name))
+                if (name.IsNullOrWhiteSpace())
                 {
                     throwFormatException();
                 }
@@ -35,7 +36,7 @@ namespace AppLogic.Config
 
                 uint? mods = null;
                 var modsText = node.Attributes["mods"]?.Value;
-                if (!String.IsNullOrWhiteSpace(modsText))
+                if (modsText != null)
                 {
                     if (!ParsingHelpers.TryParseHexOrDec(modsText, out var modsValue))
                     {
@@ -46,7 +47,7 @@ namespace AppLogic.Config
 
                 uint? vkey = null;
                 var vkeyText = node.Attributes["vkey"]?.Value;
-                if (!String.IsNullOrWhiteSpace(vkeyText))
+                if (vkeyText != null)
                 {
                     if (!ParsingHelpers.TryParseHexOrDecOrChar(vkeyText, out var vkeyValue))
                     {

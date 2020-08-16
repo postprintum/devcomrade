@@ -5,6 +5,7 @@
 
 #nullable enable
 
+using AppLogic.Helpers;
 using System;
 using System.Configuration;
 using System.Xml;
@@ -31,7 +32,7 @@ namespace AppLogic.Config
             }
 
             var xml = info.GetRawXml();
-            if (String.IsNullOrWhiteSpace(xml))
+            if (xml.IsNullOrWhiteSpace())
             {
                 return null;
             }

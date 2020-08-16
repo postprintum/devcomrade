@@ -6,4 +6,5 @@ Set-Location $PSScriptRoot
 
 #TODO: make a Chocolatey package
 
-dotnet publish -r win10-x64 -c Release ..
+dotnet clean
+dotnet publish -r win10-x64 -c Release --self-contained true -p:PublishTrimmed=true ..\DevComrade
