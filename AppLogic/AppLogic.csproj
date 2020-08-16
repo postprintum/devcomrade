@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <IsPackable>false</IsPackable>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <Version>1.0.0</Version>
   </PropertyGroup>
 
@@ -19,12 +19,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.6.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="SysTrayContainer.*.cs">
-      <DependentUpon>SysTrayContainer.cs</DependentUpon>
-    </Compile>
   </ItemGroup>
 
 </Project>

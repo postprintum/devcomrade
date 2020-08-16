@@ -212,7 +212,7 @@ namespace AppLogic.Presenter
             var name = Application.ProductName;
             using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: false);
             var value = regKey.GetValue(name, String.Empty)?.ToString();
-            return !String.IsNullOrEmpty(value) &&
+            return value.IsNotNullNorEmpty() &&
                 File.Exists(value) &&
                 String.Compare(
                     Path.GetFullPath(value.Trim()),
@@ -300,7 +300,7 @@ namespace AppLogic.Presenter
         private static void EditRoamingConfig(object? s, EventArgs e)
         {
             var path = Configuration.RoamingConfigPath;
-            if (!File.Exists(path) || String.IsNullOrWhiteSpace(File.ReadAllText(path)))
+            if (!File.Exists(path) || File.ReadAllText(path).IsNullOrWhiteSpace())
             {
                 // copy local config to roaming config
                 var folder = Path.GetDirectoryName(path);
@@ -375,9 +375,9 @@ namespace AppLogic.Presenter
             Quit();
         }
 
-        private static (string, (MenuItemEventHandler, MenuItemStateCallback)) GetSeparatorMenuItem()
+        private static (string, MenuItemEventHandler, MenuItemStateCallback) GetSeparatorMenuItem()
         {
-            return ("-", (None, None));
+            return ("-", None, None);
         }
 
         #endregion
@@ -385,11 +385,11 @@ namespace AppLogic.Presenter
         /// <summary>
         /// Provide tray menu items
         /// </summary>
-        private IEnumerable<(string, (MenuItemEventHandler, MenuItemStateCallback))> GetMenuItems()
+        private IEnumerable<(string, MenuItemEventHandler, MenuItemStateCallback)> GetMenuItems()
         {
             // first add hotkey handlers which also have menuItem in the config file
             var handlers = _handlersByHotkeyNameMap.Values
-                .Where(handler => !String.IsNullOrWhiteSpace(handler.Hotkey.MenuItem))
+                .Where(handler => handler.Hotkey.MenuItem.IsNotNullNorWhiteSpace())
                 .ToArray();
 
             if (handlers.Length > 0)
@@ -408,8 +408,10 @@ namespace AppLogic.Presenter
                         menuItemText = hotkey.MenuItem!;
                     }
 
-                    yield return (menuItemText, 
-                        ((s, e) => HandleHotkeyAsync(handler).IgnoreCancellations(), None));
+                    yield return (
+                        menuItemText, 
+                        (s, e) => HandleHotkeyAsync(handler).IgnoreCancellations(), 
+                        None);
 
                     if (hotkey.AddSeparator)
                     {
@@ -419,18 +421,18 @@ namespace AppLogic.Presenter
                 yield return GetSeparatorMenuItem();
             }
 
-            yield return ("Auto Start", (AutoStart, () => IsAutorun()));
-            yield return ("Edit Local Config", (EditLocalConfig, None));
-            yield return ("Edit Roaming Config", (EditRoamingConfig, None));
-            yield return ("Restart", (Restart, None));
+            yield return ("Auto Start", AutoStart, () => IsAutorun());
+            yield return ("Edit Local Config", EditLocalConfig, None);
+            yield return ("Edit Roaming Config", EditRoamingConfig, None);
+            yield return ("Restart", Restart, None);
             if (!Diagnostics.IsAdmin())
             {
-                yield return ("Restart as Admin", (RestartAsAdmin, None));
+                yield return ("Restart as Admin", RestartAsAdmin, None);
             }
-            yield return ("Prevent Sleep Mode", (Feedback, None));
+            yield return ("Prevent Sleep Mode", Feedback, None);
             yield return GetSeparatorMenuItem();
-            yield return ($"About {Application.ProductName}", (About, None));
-            yield return ("E&xit", (Exit, None));
+            yield return ($"About {Application.ProductName}", About, None);
+            yield return ("E&xit", Exit, None);
         }
 
         private EventHandler AsAsync(MenuItemEventHandler handler)
@@ -453,7 +455,7 @@ namespace AppLogic.Presenter
         {
             var contextMenu = new ContextMenuStrip();
 
-            foreach (var (text, (handler, queryState)) in GetMenuItems())
+            foreach (var (text, handler, queryState) in GetMenuItems())
             {
                 if (text == "-")
                 {
@@ -490,7 +492,7 @@ namespace AppLogic.Presenter
             return notepad;
         }
 
-        private NotifyIcon BuildTrayIconMenu()
+        private NotifyIcon CreateTrayIconMenu()
         {
             var notifyIcon = new NotifyIcon(this)
             {
@@ -511,11 +513,14 @@ namespace AppLogic.Presenter
             Application.AddMessageFilter(this);
             try
             {
-                var trayIconMenu = BuildTrayIconMenu();
+                var trayIconMenu = CreateTrayIconMenu();
+                this.Add(trayIconMenu);
                 trayIconMenu.Visible = true;
                 try
                 {
-                    // any future background processing will be happening here
+                    // this infinte delay defines the async scope 
+                    // for AddMessageFilter/RemoveMessageFilter
+                    // the token is cancelled when the app exits
                     await Task.Delay(Timeout.Infinite, this.Token);
                 }
                 finally
@@ -578,10 +583,6 @@ namespace AppLogic.Presenter
                 // show the menu and await its dismissal
                 using var @lock = await WithLockAsync();
 
-                // set thread focus to the menu window
-                await InputHelpers.TimerYield(token: this.Token);
-                WinApi.SetForegroundWindow(this.Menu.Handle);
-
                 var tcs = new TaskCompletionSource<DBNull>(TaskCreationOptions.RunContinuationsAsynchronously);
                 using var rego = this.Token.Register(() => tcs.TrySetCanceled());
 
@@ -590,8 +591,16 @@ namespace AppLogic.Presenter
                     handler => this.Menu.Closed += handler,
                     handler => this.Menu.Closed -= handler);
 
-                this.Menu.Show(Cursor.Position);
+                using (AttachedThreadInputScope.Create())
+                {
+                    // set thread focus to the menu window
+                    await InputHelpers.TimerYield(token: this.Token);
+                    WinApi.SetForegroundWindow(this.Menu.Handle);
+                    this.Menu.Show(Cursor.Position);
+                }
+
                 await tcs.Task;
+                await InputHelpers.TimerYield(token: this.Token);
             }
 
             showMenuAsync().IgnoreCancellations();

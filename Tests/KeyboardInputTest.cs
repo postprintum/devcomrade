@@ -119,7 +119,14 @@ namespace Tests
             Assert.IsTrue(foregroundEvent == ForegroundEvents.Ready);
 
             // feed some text to the foregroudn window
-            await KeyboardInput.FeedTextAsync(TEXT_TO_FEED, token);
+            using var threadInputScope = AttachedThreadInputScope.Create();
+            Assert.IsTrue(threadInputScope.IsAttached);
+
+            using (WaitCursorScope.Create())
+            {
+                await KeyboardInput.WaitForAllKeysReleasedAsync(token);
+                await KeyboardInput.FeedTextAsync(TEXT_TO_FEED, token);
+            }
 
             // notify the foreground couroutine that we've been fed some text
             yield return (BackgroundEvents.TextSent, DBNull.Value);

@@ -5,6 +5,7 @@
 
 #nullable enable
 
+using AppLogic.Helpers;
 using AppLogic.Models;
 using System;
 using System.Configuration;
@@ -26,13 +27,12 @@ namespace AppLogic.Config
                 void throwFormatException() => throw new FormatException(node.OuterXml);
 
                 var name = node.Attributes["name"]?.Value;
-                if (String.IsNullOrWhiteSpace(name))
+                if (name.IsNullOrWhiteSpace())
                 {
                     throwFormatException();
                 }
 
                 var value = node.Attributes["value"]?.Value ?? String.Empty;
-
                 result.Add(name!, value);
             }
 

@@ -29,7 +29,7 @@ namespace AppLogic.Helpers
         private void OnIdle(object? s, EventArgs e)
         {
             if (this.IsCurrent && 
-                _showWhen?.Invoke() != false &&
+                _showWhen?.Invoke() != false && // i.e., if null or true
                 _stopwatch.ElapsedMilliseconds >= DELAY)
             {
                 Cursor.Current = Cursors.AppStarting;

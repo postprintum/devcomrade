@@ -11,14 +11,12 @@ using System.Text.RegularExpressions;
 
 namespace AppLogic.Helpers
 {
+    /// <summary>
+    /// String extension for easy fluent syntax chains
+    /// TODO: unit tests, make Regexes static
+    /// </summary>
     internal static class StringExtensions
     {
-        //TODO: unit tests, make Regexes static
-        public static string Replace(this string @this, Regex regex, string replacement)
-        {
-            return regex.Replace(@this, replacement);
-        }
-
         public static string UnixifyLineEndings(this string @this)
         {
             // use only "\n" for line breaks
@@ -72,7 +70,7 @@ namespace AppLogic.Helpers
             var lines = @this.Split('\n');
 
             var indentSize = lines.Aggregate(
-                int.MaxValue, 
+                int.MaxValue,
                 (minSize, line) =>
                     regexSpace.Match(line) is var match && match.Success ?
                     (match.Value.Length is var size && size < minSize ? size : minSize) :

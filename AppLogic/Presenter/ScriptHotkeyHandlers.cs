@@ -93,7 +93,7 @@ namespace AppLogic.Presenter
 
         bool IHotkeyHandlerProvider.CanHandle(Hotkey hotkey, [NotNullWhen(true)] out HotkeyHandlerCallback? callback)
         {
-            if (hotkey.IsScript && !String.IsNullOrWhiteSpace(hotkey.Data))
+            if (hotkey.IsScript && hotkey.Data.IsNotNullNorWhiteSpace())
             {
                 callback = this.ExecuteScript;
                 return true;
