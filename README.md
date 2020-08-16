@@ -21,7 +21,7 @@ Meanwhile, **feel free to clone this repo, compile it and try it out**:
 
 - Download and install [.NET Core 3.1 SDK](https://download.visualstudio.microsoft.com/download/pr/547f9f81-599a-4b58-9322-d1d158385df6/ebe3e02fd54c29487ac32409cb20d352/dotnet-sdk-3.1.401-win-x64.exe), if you haven't got it already.
 
-- Clone the repo to a folder of your choice, e.g.:
+- Download and unzip [the source](https://github.com/postprintum/devcomrade/archive/main.zip), or use `git` to clone the repo to a folder of your choice, e.g.:
     ```
     mkdir DevComradeRepo && cd DevComradeRepo
     git clone https://github.com/postprintum/devcomrade .
@@ -30,11 +30,11 @@ Meanwhile, **feel free to clone this repo, compile it and try it out**:
     ```
     .\Package\make-and-run.bat
     ```
-- Or do it manually:
+- Or do that manually:
     ```
     dotnet publish -r win10-x64 -c Release --self-contained false -p:PublishTrimmed=false .\DevComrade
     
-    start .\DevComrade\bin\Release\netcoreapp3.1\win10-x64\DevComrade.exe
+    start .\DevComrade\bin\Release\netcoreapp3.1\win10-x64\publish\DevComrade.exe
     ```
 Once run, DevComrade shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" height="16"/> icon in the system tray. Some of the features to try out:
 
