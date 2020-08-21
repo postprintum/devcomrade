@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace Tests
 {
     [TestClass]
-    public class CoroutineProxyTest
+    public class AsyncCoroutineProxyTest
     {
         const string TRACE_CATEGORY = "coroutines";
 
@@ -122,8 +122,8 @@ namespace Tests
             await using var apartment = new Tests.ThreadPoolApartment();
             await apartment.Run(async () =>
             {
-                var proxyA = new CoroutineProxy<string>();
-                var proxyB = new CoroutineProxy<string>();
+                var proxyA = new AsyncCoroutineProxy<string>();
+                var proxyB = new AsyncCoroutineProxy<string>();
 
                 var listener = new Tests.CategoryTraceListener(TRACE_CATEGORY);
                 Trace.Listeners.Add(listener);
