@@ -81,21 +81,21 @@ namespace Tests
             await using var backgroundCoroutine =
                 await backgroundCoroutineProxy.AsAsyncEnumerator(cts.Token);
 
-            // notify the background couroutine that we're ready
+            // notify the background coroutine that we're ready
             yield return (ForegroundEvents.Ready, DBNull.Value);
 
-            // await for the background couroutine to also be ready
+            // await for the background coroutine to also be ready
             var (foregroundEvent, _) = await backgroundCoroutine.GetNextAsync(cts.Token);
             Assert.IsTrue(foregroundEvent == BackgroundEvents.Ready);
 
-            // await for the background couroutine to have fed some keystrokes
+            // await for the background coroutine to have fed some keystrokes
             (foregroundEvent, _) = await backgroundCoroutine.GetNextAsync(cts.Token);
             Assert.IsTrue(foregroundEvent == BackgroundEvents.TextSent);
 
             // await for idle input
             await InputHelpers.InputYield(delay: INPUT_IDLE_CHECK_INTERVAL, token: cts.Token);
 
-            // notify the background couroutine about the text we've actually received
+            // notify the background coroutine about the text we've actually received
             var text = textBox.Text.Replace(Environment.NewLine, "\n");
             yield return (ForegroundEvents.TextReceived, text);
         }
@@ -111,14 +111,14 @@ namespace Tests
 
             await using var foregroundCoroutine = await foregroundCoroutineProxy.AsAsyncEnumerator(token);
 
-            // notify the foreground couroutine that we're ready
+            // notify the foreground coroutine that we're ready
             yield return (BackgroundEvents.Ready, DBNull.Value);
 
-            // await for the foreground couroutine to also be ready
+            // await for the foreground coroutine to also be ready
             var (foregroundEvent, _) = await foregroundCoroutine.GetNextAsync(token);
             Assert.IsTrue(foregroundEvent == ForegroundEvents.Ready);
 
-            // feed some text to the foregroudn window
+            // feed some text to the foreground window
             using var threadInputScope = AttachedThreadInputScope.Create();
             Assert.IsTrue(threadInputScope.IsAttached);
 
@@ -128,10 +128,10 @@ namespace Tests
                 await KeyboardInput.FeedTextAsync(TEXT_TO_FEED, token);
             }
 
-            // notify the foreground couroutine that we've been fed some text
+            // notify the foreground coroutine that we've been fed some text
             yield return (BackgroundEvents.TextSent, DBNull.Value);
 
-            // await for the foreground couroutine to reply with the text
+            // await for the foreground coroutine to reply with the text
             object text;
             (foregroundEvent, text) = await foregroundCoroutine.GetNextAsync(token);
             Assert.IsTrue(foregroundEvent == ForegroundEvents.TextReceived);
@@ -143,13 +143,13 @@ namespace Tests
         {
             using var cts = new CancellationTokenSource(); // TODO: test cancellation
 
-            var foregroundCoroutineProxy = new CoroutineProxy<(ForegroundEvents, object)>();
-            var backgroundCoroutineProxy = new CoroutineProxy<(BackgroundEvents, object)>();
+            var foregroundCoroutineProxy = new AsyncCoroutineProxy<(ForegroundEvents, object)>();
+            var backgroundCoroutineProxy = new AsyncCoroutineProxy<(BackgroundEvents, object)>();
 
             await using var foregroundApartment = new WinFormsApartment();
-            await using var backroundApartment = new WinFormsApartment();
+            await using var backgroundApartment = new WinFormsApartment();
 
-            // start both coroutines, each in on its own WinForms thread
+            // start both coroutine, each in its own WinForms thread
 
             var foregroundTask = foregroundCoroutineProxy.Run(
                 foregroundApartment, 
@@ -157,7 +157,7 @@ namespace Tests
                 cts.Token);
 
             var backgroundTask = backgroundCoroutineProxy.Run(
-                backroundApartment,
+                backgroundApartment,
                 token => BackgroundCoroutine(foregroundCoroutineProxy, token),
                 cts.Token);
 

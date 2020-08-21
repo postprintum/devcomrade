@@ -47,7 +47,7 @@ namespace Tests
         }
 
         public static Task Run<T>(
-            this CoroutineProxy<T> @this,
+            this AsyncCoroutineProxy<T> @this,
             IAsyncApartment apartment,
             Func<CancellationToken, IAsyncEnumerable<T>> routine, 
             CancellationToken token)
@@ -58,12 +58,12 @@ namespace Tests
         }
     }
 
-    public class CoroutineProxy<T> : ICoroutineProxy<T>
+    public class AsyncCoroutineProxy<T> : ICoroutineProxy<T>
     {
         readonly TaskCompletionSource<IAsyncEnumerable<T>> _proxyTcs =
             new TaskCompletionSource<IAsyncEnumerable<T>>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public CoroutineProxy()
+        public AsyncCoroutineProxy()
         {
         }
 
@@ -83,8 +83,7 @@ namespace Tests
             
             try
             {
-                //TODO: do we need to use routine(token).WithCancellation(token) ?
-                await foreach (var item in routine(token))
+                await foreach (var item in routine(token).WithCancellation(token))
                 {
                     await writer.WriteAsync(item, token);
                 }
