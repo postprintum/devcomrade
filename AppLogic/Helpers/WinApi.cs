@@ -7,6 +7,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace AppLogic.Helpers
 {
@@ -88,6 +89,16 @@ namespace AppLogic.Helpers
 
         public const uint SPI_SETKEYBOARDCUES = 0x100B;
 
+        public const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+
+        public const uint SW_SHOWMAXIMIZED = 3;
+
+        public const uint SW_SHOWMINIMIZED = 2;
+
+        public const uint SW_RESTORE = 9;
+
+        public const uint SW_SHOWNORMAL = 1;
+
         public enum PROCESS_DPI_AWARENESS
         {
             Process_DPI_Unaware = 0,
@@ -154,6 +165,18 @@ namespace AppLogic.Helpers
             public int y;
         }
 
+        [Serializable]
+        [StructLayout(LayoutKind.Sequential)]
+        public struct WINDOWPLACEMENT
+        {
+            public int length;
+            public uint flags;
+            public uint showCmd;
+            public System.Drawing.Point ptMinPosition;
+            public System.Drawing.Point ptMaxPosition;
+            public System.Drawing.Rectangle rcNormalPosition;
+        }
+
         public delegate void TimerProc(IntPtr hWnd, uint uMsg, IntPtr nIDEvent, uint dwTime);
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -190,6 +213,7 @@ namespace AppLogic.Helpers
         public static extern short GetKeyState(int vKey);
 
         [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetKeyboardState(byte[] lpKeyState);
 
         [DllImport("kernel32.dll")]
@@ -202,6 +226,7 @@ namespace AppLogic.Helpers
         public static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetForegroundWindow(IntPtr hwnd);
 
         [DllImport("user32.dll")]
@@ -239,9 +264,11 @@ namespace AppLogic.Helpers
         public static extern bool FreeConsole();
 
         [DllImport("kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
 
         [DllImport("SHCore.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetProcessDpiAwareness(PROCESS_DPI_AWARENESS awareness);
 
         [DllImport("SHCore.dll", SetLastError = true)]
@@ -250,11 +277,13 @@ namespace AppLogic.Helpers
         public delegate void WaitOrTimerCallbackProc(IntPtr lpParameter, bool TimerOrWaitFired);
 
         [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CreateTimerQueueTimer(out IntPtr phNewTimer,
            IntPtr TimerQueue, WaitOrTimerCallbackProc Callback, IntPtr Parameter,
            uint DueTime, uint Period, UIntPtr Flags);
 
         [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DeleteTimerQueueTimer(IntPtr TimerQueue, IntPtr Timer, IntPtr CompletionEvent);
 
         [DllImport("user32.dll")]
@@ -291,9 +320,42 @@ namespace AppLogic.Helpers
         public static extern void SystemParametersInfo(uint uiAction, uint uiParam, ref int pvParam, uint fWinIni);
 
         [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool IsWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool IsChild(IntPtr hWndParent, IntPtr hWnd);
+
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumDesktopWindows(IntPtr hDesktop, EnumWindowsProc enumProc, IntPtr lParam);
+
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, uint dwProcessId);
+
+        [DllImport("kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool QueryFullProcessImageName(IntPtr hprocess, int dwFlags, StringBuilder lpExeName, out int size);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CloseHandle(IntPtr hHandle);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetWindowPlacement(
+            IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool ShowWindow(IntPtr hWnd, uint nCmdShow);
     }
 }

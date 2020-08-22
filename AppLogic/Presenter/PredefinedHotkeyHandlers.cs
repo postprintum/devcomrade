@@ -111,18 +111,20 @@ namespace AppLogic.Presenter
         /// Paste to the internal Notepad
         /// </summary>
         [HotkeyHandler]
-        public Task PasteToNotepad(Hotkey _, CancellationToken token)
+        public async Task PasteToNotepad(Hotkey _, CancellationToken token)
         {
+            await Task.CompletedTask;
             Host.ShowNotepad(GetClipboardText());
-            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Opens a URL from clipboard, merging lines and removing trailing blank spaces
         /// </summary>
         [HotkeyHandler]
-        public Task OpenUrl(Hotkey _, CancellationToken token)
+        public async Task OpenUrl(Hotkey _, CancellationToken token)
         {
+            await Task.CompletedTask;
+
             var text = Regex.Replace(
                 Host.GetClipboardText(), @"\r\n", String.Empty,
                 RegexOptions.Singleline);
@@ -138,15 +140,19 @@ namespace AppLogic.Presenter
             }
 
             Host.PlayNotificationSound();
-            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Run Windows Terminal at the current folder
         /// </summary>
         [HotkeyHandler]
-        public Task RunWindowsTerminal(Hotkey _, CancellationToken token)
+        public async Task RunWindowsTerminal(Hotkey _, CancellationToken token)
         {
+            if (await Utilities.ActivateProcess("WINDOWSTERMINAL", token))
+            {
+                return;
+            }
+                
             var currentFolder = Directory.GetCurrentDirectory();
             var startInfo = new ProcessStartInfo
             {
@@ -154,19 +160,23 @@ namespace AppLogic.Presenter
                 Arguments = $"-d \"{currentFolder}\"",
                 FileName = "wt.exe",
                 WorkingDirectory = currentFolder
+               
             };
             using var process = Process.Start(startInfo);
-
             Host.PlayNotificationSound();
-            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Run VS Code at the current folder
         /// </summary>
         [HotkeyHandler]
-        public Task RunVSCode(Hotkey _, CancellationToken token)
+        public async Task RunVSCode(Hotkey _, CancellationToken token)
         {
+            if (await Utilities.ActivateProcess("CODE", token))
+            {
+                return;
+            }
+
             var startInfo = new ProcessStartInfo
             {
                 CreateNoWindow = true,
@@ -177,40 +187,37 @@ namespace AppLogic.Presenter
 
             using var process = Process.Start(startInfo);
             Host.PlayNotificationSound();
-
-            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Show the main menu
         /// </summary>
         [HotkeyHandler]
-        public Task ShowMenu(Hotkey _, CancellationToken token)
+        public async Task ShowMenu(Hotkey _, CancellationToken token)
         {
+            await Task.CompletedTask;
             Host.ShowMenu();
-            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Invoke Windows' PresentationSettings.exe
         /// </summary>
         [HotkeyHandler]
-        public Task PresentationSettings(Hotkey _, CancellationToken token)
+        public async Task PresentationSettings(Hotkey _, CancellationToken token)
         {
+            await Task.CompletedTask;
             Diagnostics.StartProcess("PresentationSettings.exe");
-
             Host.PlayNotificationSound();
-            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Show the internal Notepad
         /// </summary>
         [HotkeyHandler]
-        public Task OpenNotepad(Hotkey _, CancellationToken token)
+        public async Task OpenNotepad(Hotkey _, CancellationToken token)
         {
+            await Task.CompletedTask;
             Host.ShowNotepad(null);
-            return Task.CompletedTask;
         }
 
 

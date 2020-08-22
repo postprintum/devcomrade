@@ -6,13 +6,98 @@
 #nullable enable
 
 using System;
+using System.Security.Principal;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AppLogic.Helpers
 {
     internal static partial class Utilities
     {
+        /// <summary>
+        /// Get top-level window by process name
+        /// </summary>
+        public static IntPtr FindProcessWindow(string processName)
+        {
+            var hwndFound = IntPtr.Zero;
+
+            bool enumWindowsProc(IntPtr hwnd, IntPtr lparam)
+            {
+                if (!WinApi.IsWindowVisible(hwnd))
+                {     
+                    return true;
+                }
+
+                WinApi.GetWindowThreadProcessId(hwnd, out var pid);
+                if (pid == 0)
+                {
+                    return true;
+                }
+
+                var hProcess = WinApi.OpenProcess(WinApi.PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
+                if (hProcess == IntPtr.Zero)
+                {
+                    return true;
+                }
+                try
+                {
+                    var buffer = new StringBuilder(1024);
+                    int size = buffer.Capacity;
+                    if (WinApi.QueryFullProcessImageName(hProcess, 0, buffer, out size))
+                    {
+                        var path = buffer.ToString();
+                        var fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+                        if (String.Compare(fileName, processName, ignoreCase: true) == 0)
+                        {
+                            hwndFound = hwnd;
+                            return false;
+                        }
+                    }
+                }
+                finally
+                {
+                    WinApi.CloseHandle(hProcess);
+                }
+                return true;
+            }
+
+            WinApi.EnumDesktopWindows(IntPtr.Zero, enumWindowsProc, IntPtr.Zero);
+            return hwndFound;
+        }
+
+        /// <summary>
+        /// Activate the process's top window
+        /// </summary>
+        public static async Task<bool> ActivateProcess(string processName, CancellationToken token)
+        {
+            var hwnd = Utilities.FindProcessWindow(processName);
+            if (hwnd == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            var placement = new WinApi.WINDOWPLACEMENT();
+            placement.length = System.Runtime.InteropServices.Marshal.SizeOf(placement);
+            WinApi.GetWindowPlacement(hwnd, ref placement);
+            var showCmd = placement.showCmd switch
+            {
+                WinApi.SW_SHOWMAXIMIZED => WinApi.SW_SHOWMAXIMIZED,
+                WinApi.SW_SHOWMINIMIZED => WinApi.SW_RESTORE,
+                _ => WinApi.SW_SHOWNORMAL
+            };
+
+            using (AttachedThreadInputScope.Create())
+            {
+                await InputHelpers.TimerYield(token: token);
+                WinApi.SetForegroundWindow(hwnd);
+                WinApi.ShowWindow(hwnd, showCmd);
+                await InputHelpers.TimerYield(token: token);
+            }
+            return true;
+        }
+
         /// <summary>
         /// GetHotkeyTitle
         /// </summary>

@@ -17,7 +17,7 @@ namespace AppLogic.Helpers
         private static readonly ThreadLocal<IDisposable?> s_current = 
             new ThreadLocal<IDisposable?>();
 
-        private const int DELAY = 500;
+        private const int DELAY = 200;
 
         private bool IsCurrent => s_current.Value == this;
 
