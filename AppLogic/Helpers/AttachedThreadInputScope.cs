@@ -24,8 +24,8 @@ namespace AppLogic.Helpers
 
         private bool _attached = false;
         private readonly IntPtr _foregroundWindow = IntPtr.Zero;
-        private readonly uint _foregroundThread = 0;
-        private readonly uint _currentThread = 0;
+        private readonly uint _foregroundThreadId = 0;
+        private readonly uint _currentThreadId = 0;
 
         private AttachedThreadInputScope()
         {
@@ -33,13 +33,13 @@ namespace AppLogic.Helpers
             s_current.Value = this;
 
             _foregroundWindow = WinApi.GetForegroundWindow();
-            _currentThread = WinApi.GetCurrentThreadId();
-            _foregroundThread = WinApi.GetWindowThreadProcessId(_foregroundWindow, out var _);
+            _currentThreadId = WinApi.GetCurrentThreadId();
+            _foregroundThreadId = WinApi.GetWindowThreadProcessId(_foregroundWindow, out var _);
 
-            if (_currentThread != _foregroundThread)
+            if (_currentThreadId != _foregroundThreadId)
             {
                 // attach to the foreground thread
-                if (!WinApi.AttachThreadInput(_foregroundThread, _currentThread, true))
+                if (!WinApi.AttachThreadInput(_foregroundThreadId, _currentThreadId, true))
                 {
                     return;
                 }
@@ -56,9 +56,9 @@ namespace AppLogic.Helpers
                 if (_attached)
                 {
                     _attached = false;
-                    if (_currentThread != _foregroundThread)
+                    if (_currentThreadId != _foregroundThreadId)
                     {
-                        WinApi.AttachThreadInput(_foregroundThread, _currentThread, false);
+                        WinApi.AttachThreadInput(_foregroundThreadId, _currentThreadId, false);
                     }
                 }
             }
