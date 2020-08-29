@@ -29,8 +29,15 @@ namespace AppLogic.Presenter
         IMessageFilter,
         IHotkeyHandlerHost
     {
+        const int ASYNC_LOCK_TIMEOUT = 250;
+        const int FOREGROUND_WINDOW_TRACKING_INTERVAL = 250;
+
         // classes which provide hotkey handlers
         private int _hotkeyId = 0; // IDs for Win32 RegisterHotKey
+
+        private int _menuActive = 0;
+
+        private IntPtr _trackedForegroundWindow = IntPtr.Zero;
 
         // SemaphoreSlim as an async lock for hotkey handlers to avoid re-rentrancy
         private readonly SemaphoreSlim _asyncLock = new SemaphoreSlim(1);
@@ -65,10 +72,16 @@ namespace AppLogic.Presenter
 
         private void Quit() => _cts.Cancel();
 
+        private void OnEnterMenu() => _menuActive++;
+
+        private void OnExitMenu() => _menuActive--;
+
+        private bool IsMenuActive => _menuActive > 0;
+
         private ValueTask<IDisposable> WithLockAsync() => 
             Disposable.CreateAsync(
-                    () => _asyncLock.WaitAsync(this.Token),
-                    () => _asyncLock.Release());
+                () => _asyncLock.WaitAsync(this.Token),
+                () => _asyncLock.Release());
 
         // standard hotkey handler providers
         private static IEnumerable<Type> GetHotkeyHandlerProviders()
@@ -124,6 +137,24 @@ namespace AppLogic.Presenter
                 folder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);           
             }
             Directory.SetCurrentDirectory(folder);
+        }
+
+        private void InitForegroundWindowTracking()
+        {
+            var timer = new System.Windows.Forms.Timer(this) 
+            { 
+                Interval = FOREGROUND_WINDOW_TRACKING_INTERVAL 
+            };
+
+            timer.Tick += (s, e) =>
+            {
+                if (Utilities.TryGetThirdPartyForgroundWindow(out var hwnd))
+                {
+                    _trackedForegroundWindow = hwnd;
+                }
+            };
+
+            //timer.Start();
         }
 
         private void InitializeHotkeys()
@@ -237,16 +268,24 @@ namespace AppLogic.Presenter
 
         private async Task HandleHotkeyAsync(HotkeyHandler hotkeyHandler)
         {
-            // try to get an instant async lock
-            if (!await _asyncLock.WaitAsync(0, this.Token))
+            while (!await _asyncLock.WaitAsync(ASYNC_LOCK_TIMEOUT, this.Token))
             {
-                // discard this hotkey event, as we only allow 
-                // one handler at a time to prevent re-entrancy
-                return;
+                {
+                    if (this.IsMenuActive)
+                    {
+                        this.Menu.Close(ToolStripDropDownCloseReason.Keyboard);
+                    }
+                    else
+                    {
+                        // discard this hotkey event, as we only allow 
+                        // one handler at a time to prevent re-entrancy
+                        return;
+                    }
+                }
             }
+            // try to get an instant async lock
             try
             {
-                this.Menu.Close(ToolStripDropDownCloseReason.Keyboard);
                 await InputHelpers.TimerYield(token: this.Token);
                 await hotkeyHandler.Callback(hotkeyHandler.Hotkey, this.Token);
             }
@@ -311,18 +350,6 @@ namespace AppLogic.Presenter
                 File.WriteAllText(path, Configuration.GetDefaultRoamingConfig(), Encoding.UTF8);
             }
             Diagnostics.ShellExecute(path);
-        }
-        private void OpenNotepad()
-        {
-            if (this.Notepad.Visible)
-            {
-                using var threadInputScope = AttachedThreadInputScope.Create();
-                WinApi.SetForegroundWindow(Notepad.Handle);
-            }
-            else
-            {
-                this.Notepad.Show();
-            }
         }
 
         private void Restart(object? s, EventArgs e)
@@ -454,6 +481,8 @@ namespace AppLogic.Presenter
         private ContextMenuStrip CreateContextMenu()
         {
             var contextMenu = new ContextMenuStrip();
+            contextMenu.Opened += (s, e) => OnEnterMenu();
+            contextMenu.Closed += (s, e) => OnExitMenu();
 
             foreach (var (text, handler, queryState) in GetMenuItems())
             {
@@ -487,9 +516,7 @@ namespace AppLogic.Presenter
 
         private Notepad CreateNotepad()
         {
-            var notepad = new Notepad();
-            notepad.Show();
-            return notepad;
+            return new Notepad(this.Token);
         }
 
         private NotifyIcon CreateTrayIconMenu()
@@ -501,6 +528,14 @@ namespace AppLogic.Presenter
                 Icon = System.Drawing.Icon.ExtractAssociatedIcon(Diagnostics.GetExecutablePath()),
             };
 
+            void clicked(object? s, EventArgs e)
+            {
+                (this as IHotkeyHandlerHost).ShowMenu();
+            }
+
+            notifyIcon.Click += clicked;
+            notifyIcon.DoubleClick += clicked;
+
             return notifyIcon;
         }
 
@@ -508,6 +543,7 @@ namespace AppLogic.Presenter
         private async Task RunAsync()
         {
             SetCurrentFolder();
+            InitForegroundWindowTracking();
             InitializeHotkeys();
 
             Application.AddMessageFilter(this);
@@ -581,38 +617,79 @@ namespace AppLogic.Presenter
             async Task showMenuAsync()
             {
                 // show the menu and await its dismissal
-                using var @lock = await WithLockAsync();
-
-                var tcs = new TaskCompletionSource<DBNull>(TaskCreationOptions.RunContinuationsAsynchronously);
-                using var rego = this.Token.Register(() => tcs.TrySetCanceled());
-
-                using var scope = EventHandlerScope<ToolStripDropDownClosedEventHandler>.Create(
-                    (s, e) => tcs.TrySetResult(DBNull.Value),
-                    handler => this.Menu.Closed += handler,
-                    handler => this.Menu.Closed -= handler);
-
-                using (AttachedThreadInputScope.Create())
+                if (!await _asyncLock.WaitAsync(ASYNC_LOCK_TIMEOUT, this.Token))
                 {
-                    // set thread focus to the menu window
-                    await InputHelpers.TimerYield(token: this.Token);
-                    WinApi.SetForegroundWindow(this.Menu.Handle);
-                    this.Menu.Show(Cursor.Position);
+                    return;
                 }
+                OnEnterMenu();
+                try
+                {
+                    var tcs = new TaskCompletionSource<DBNull>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    using var rego = this.Token.Register(() => tcs.TrySetCanceled());
 
-                await tcs.Task;
-                await InputHelpers.TimerYield(token: this.Token);
+                    using var scope = EventHandlerScope<ToolStripDropDownClosedEventHandler>.Create(
+                        (s, e) => tcs.TrySetResult(DBNull.Value),
+                        handler => this.Menu.Closed += handler,
+                        handler => this.Menu.Closed -= handler);
+
+                    if (!Utilities.TryGetThirdPartyForgroundWindow(out var targetWindow))
+                    {
+                        // special treatment for our Internal Notepad
+                        if (_notepad.IsValueCreated && this._notepad.Value.ContainsFocus)
+                        {
+                            targetWindow = WinApi.GetForegroundWindow();
+                        }
+                        else
+                        {
+                            targetWindow = Utilities.GetPrevActiveWindow();
+                        }
+                    }
+
+                    using (var attachedInput = AttachedThreadInputScope.Create())
+                    {
+                        // set thread focus to the menu window
+                        await InputHelpers.TimerYield(token: this.Token);
+                        WinApi.SetForegroundWindow(this.Menu.Handle);
+
+                        this.Menu.Show(Cursor.Position);
+                        await tcs.Task;
+
+                        WinApi.SetForegroundWindow(targetWindow);
+
+                        // make sure the mouse cursor has refreshed
+                        Cursor.Hide();
+                        await InputHelpers.TimerYield(token: this.Token);
+                        Cursor.Show();
+                    }
+                }
+                finally
+                {
+                    OnExitMenu();
+                    _asyncLock.Release();
+                }
             }
 
             showMenuAsync().IgnoreCancellations();
         }
-
-        void IHotkeyHandlerHost.ShowNotepad(string? text)
+        
+        async Task IHotkeyHandlerHost.ShowNotepad(string? text)
         {
-            OpenNotepad();
-            if (text != null )
+            using var threadInputScope = AttachedThreadInputScope.Create();
+
+            if (!this.Notepad.Visible)
             {
-                this.Notepad.TextBox.SelectAll();
-                this.Notepad.TextBox.Paste(text);
+                this.Notepad.Show();
+            }
+            WinApi.SetForegroundWindow(Notepad.Handle);
+
+            await this.Notepad.WaitForReadyAsync(this.Token);
+
+            this.Notepad.FocusEditor();
+
+            if (text != null)
+            {
+                this.Notepad.SelectAll();
+                this.Notepad.Paste(text);
             }
         }
 

@@ -20,7 +20,8 @@ namespace Tests
     public class KeyboardInputTest
     {
         const int INPUT_IDLE_CHECK_INTERVAL = 100;
-        const string TEXT_TO_FEED = "This is an example\nof multiline\ntext";
+        const string TEXT_TO_FEED = "This is an example!";
+        const string MULTILINE_TEXT_TO_FEED = "This is an example\nof multiline\ntext!";
 
         static KeyboardInputTest ()
         {
@@ -31,6 +32,7 @@ namespace Tests
         {
             Ready,
             TextReceived,
+            Cleared,
             Finish
         }
 
@@ -96,8 +98,24 @@ namespace Tests
             await InputHelpers.InputYield(delay: INPUT_IDLE_CHECK_INTERVAL, token: cts.Token);
 
             // notify the background coroutine about the text we've actually received
+            yield return (ForegroundEvents.TextReceived,
+                textBox.Text.Replace(Environment.NewLine, "\n"));
+
+            textBox.Clear();
+            // notify the background coroutine that we're cleared the text
+            yield return (ForegroundEvents.Cleared, DBNull.Value);
+
+            // await for the background coroutine to have fed some new keystrokes
+            (foregroundEvent, _) = await backgroundCoroutine.GetNextAsync(cts.Token);
+            Assert.IsTrue(foregroundEvent == BackgroundEvents.TextSent);
+
+            // await for idle input
+            await InputHelpers.InputYield(delay: INPUT_IDLE_CHECK_INTERVAL, token: cts.Token);
+
+            // notify the background coroutine about the text we've actually received
             var text = textBox.Text.Replace(Environment.NewLine, "\n");
-            yield return (ForegroundEvents.TextReceived, text);
+            yield return (ForegroundEvents.TextReceived,
+                textBox.Text.Replace(Environment.NewLine, "\n"));
         }
 
         /// <summary>
@@ -128,7 +146,7 @@ namespace Tests
                 await KeyboardInput.FeedTextAsync(TEXT_TO_FEED, token);
             }
 
-            // notify the foreground coroutine that we've been fed some text
+            // notify the foreground coroutine that we've finished feeding text
             yield return (BackgroundEvents.TextSent, DBNull.Value);
 
             // await for the foreground coroutine to reply with the text
@@ -136,6 +154,25 @@ namespace Tests
             (foregroundEvent, text) = await foregroundCoroutine.GetNextAsync(token);
             Assert.IsTrue(foregroundEvent == ForegroundEvents.TextReceived);
             Assert.AreEqual(text, TEXT_TO_FEED);
+
+            // await for the foreground coroutine to clear the text
+            (foregroundEvent, _) = await foregroundCoroutine.GetNextAsync(token);
+            Assert.IsTrue(foregroundEvent == ForegroundEvents.Cleared);
+
+            // feed some more text to the foreground window
+            using (WaitCursorScope.Create())
+            {
+                await KeyboardInput.WaitForAllKeysReleasedAsync(token);
+                await KeyboardInput.FeedTextAsync(MULTILINE_TEXT_TO_FEED, token);
+            }
+
+            // notify the foreground coroutine that we've finished feeding text
+            yield return (BackgroundEvents.TextSent, DBNull.Value);
+
+            // await for the foreground coroutine to reply with the text
+            (foregroundEvent, text) = await foregroundCoroutine.GetNextAsync(token);
+            Assert.IsTrue(foregroundEvent == ForegroundEvents.TextReceived);
+            Assert.AreEqual(text, MULTILINE_TEXT_TO_FEED);
         }
 
         [TestMethod]

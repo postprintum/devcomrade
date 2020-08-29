@@ -6,6 +6,9 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -134,6 +137,67 @@ namespace AppLogic.Helpers
         {
             return hwnd != IntPtr.Zero &&
                 (hwnd == hwndParent || WinApi.IsChild(hwndParent, hwnd));
+        }
+
+        /// <summary>
+        /// Returns a foreground window which is not of our app and not the taskbar
+        /// </summary>
+        public static bool TryGetThirdPartyForgroundWindow(out IntPtr hwnd)
+        {
+            hwnd = IntPtr.Zero;
+            var foregroundWindow = WinApi.GetForegroundWindow();
+            var currentThreadId = WinApi.GetCurrentThreadId();
+            var foregroundThread = WinApi.GetWindowThreadProcessId(foregroundWindow, out var _);
+            if (currentThreadId == foregroundThread)
+            {
+                return false;
+            }
+            else
+            {
+                var hwndRoot = WinApi.GetAncestor(foregroundWindow, WinApi.GA_ROOT);
+                if (hwndRoot != IntPtr.Zero)
+                {
+                    foregroundWindow = hwndRoot;
+                }
+
+                var className = new StringBuilder(capacity: 256);
+                WinApi.GetClassName(foregroundWindow, className, className.Capacity - 1);
+                if (className.ToString().CompareTo("Shell_TrayWnd") == 0)
+                {
+                    return false;
+                }
+
+                hwnd = foregroundWindow;
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Get top level window for the current desktop
+        /// </summary>
+        public static IntPtr GetPrevActiveWindow()
+        {
+            var foregroundWindow = WinApi.GetAncestor(WinApi.GetForegroundWindow(), WinApi.GA_ROOT);
+
+            var hwndPrev = IntPtr.Zero;
+            var hwndFound = IntPtr.Zero;
+
+            bool enumWindowsProc(IntPtr hwnd, IntPtr lparam)
+            {
+                if (WinApi.IsWindowVisible(hwnd))
+                {
+                    if (hwndPrev == foregroundWindow)
+                    {
+                        hwndFound = hwnd;
+                        return false;
+                    }
+                    hwndPrev = hwnd;
+                }
+                return true;
+            }
+
+            WinApi.EnumDesktopWindows(IntPtr.Zero, enumWindowsProc, IntPtr.Zero);
+            return hwndFound;
         }
     }
 }

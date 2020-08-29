@@ -1,3 +1,5 @@
+<img src="./Art/menu.jpg" alt="DevComrade Win+F10 Menu" width="800"/>
+
 # Introduction 
 **DevComrade** is a Windows copy/paste/run productivity improvement tool for developers. 
 
@@ -7,9 +9,20 @@ Or, have you ever been annoyed with some broken formatting, indentation, inconsi
 
 Now I have two dedicated hotkeys for that, **<kbd>Win</kbd>+<kbd>Ins</kbd> (paste as single line) and <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Ins</kbd> (paste as multiple lines)**, which uniformly work across all apps and browsers and remove the trailing empty lines and the last line's CR/LF ending.
 
-One other source of disappointment for me has always been how custom keyboard hotkeys work with Windows Shell shortcuts. It is a common struggle to find a convenient hotkey combination that still can be assigned to start a custom app. E.g., it is impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed (of course, we can run `taskkill /im ApplicationFrameHost.exe /f` to [fix that](https://superuser.com/a/961761), if we dare).
+One other source of disappointment for me has always been how custom keyboard hotkeys work with Windows Shell shortcuts. It is a common struggle to find a convenient hotkey combination that still can be assigned to start a custom app. E.g., it is impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed.
 
-**DevComrade** has been made to solve this problem, too. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples) in the `.config` file.
+**DevComrade** has been made to solve this problem, too. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. 
+
+Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples) in the `.config` file. E.g., generating a GUID:
+
+```XML
+<hotkey name="InsertGuid" menuItem="Insert &amp;Guid" isScript="true">
+    <!-- this is an example of a C# scriptlet handler -->
+    <![CDATA[
+        await Host.FeedTextAsync(Guid.NewGuid().ToString("B").ToUpper(), Token);
+    ]]>
+</hotkey>
+```
 
 When it comes to pasting text, **DevComrade** is different from many similar utilities (e.g., from the still-excellent [Puretext](https://stevemiller.net/puretext/)) in how it uses [Win32 simulated input API](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput) to elaborately feed the text into the currently active window, character by character as though it was typed by a person. For example, it works well with Google's [Secure Shell App Chrome extension](https://chrome.google.com/webstore/detail/secure-shell-app/pnhechapfaindjhompbnflcldabbghjo?hl=en).
 
@@ -47,7 +60,6 @@ This tool has been working well for my own personal needs, but outside that its 
 
 <hr>
 
-<img src="./Art/menu.jpg" alt="DevComrade Win+F10 Menu" width="800"/>
 <img src="./Art/notepad.jpg" alt="DevComrade Alt+Ins Notepad" width="800"/>
 
 <!---

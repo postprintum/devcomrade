@@ -24,6 +24,6 @@ namespace AppLogic.Presenter
         Task FeedTextAsync(string text, CancellationToken token);
         void PlayNotificationSound();
         void ShowMenu();
-        void ShowNotepad(string? text);
+        Task ShowNotepad(string? text);
     }
 }

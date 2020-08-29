@@ -16,6 +16,7 @@ namespace AppLogic.Helpers
         public const int WM_HOTKEY = 0x0312;
         public const int WM_ENDSESSION = 0x16;
         public const int WM_QUIT = 0x0012;
+        public const int WM_SETFOCUS = 0x0007;
 
         public const int KEYEVENTF_EXTENDEDKEY = 1;
         public const int KEYEVENTF_KEYUP = 2;
@@ -98,6 +99,18 @@ namespace AppLogic.Helpers
         public const uint SW_RESTORE = 9;
 
         public const uint SW_SHOWNORMAL = 1;
+
+        public const uint GW_HWNDFIRST = 0;
+        public const uint GW_HWNDLAST = 1;
+        public const uint GW_HWNDNEXT = 2;
+        public const uint GW_HWNDPREV = 3;
+        public const uint GW_OWNER = 4;
+        public const uint GW_CHILD = 5;
+        public const uint GW_ENABLEDPOPUP = 6;
+
+        public const uint GA_PARENT = 1;
+        public const uint GA_ROOT = 2;
+        public const uint GA_ROOTOWNER = 3;
 
         public enum PROCESS_DPI_AWARENESS
         {
@@ -357,5 +370,20 @@ namespace AppLogic.Helpers
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool ShowWindow(IntPtr hWnd, uint nCmdShow);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr GetAncestor(IntPtr hWnd, uint uCmd);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetParent(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetActiveWindow();
     }
 }

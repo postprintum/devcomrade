@@ -32,6 +32,16 @@ namespace AppLogic.Helpers
             Debug.WriteLine(string.Format($"{filePath}({lineNumber}): {trimmedMessage}"));
         }
 
+        [Conditional("DEBUG")]
+        public static void LogMethodName(
+            [CallerMemberName] string callerName = "",
+            [CallerLineNumber] int lineNumber = 0,
+            [CallerFilePath] string filePath = "")
+        {
+            // trim trailing new line characters
+            Debug.WriteLine(string.Format($"{filePath}({lineNumber}): {callerName}"));
+        }
+
         public static bool IsAdmin()
         {
             return new WindowsPrincipal(WindowsIdentity.GetCurrent())

@@ -113,8 +113,7 @@ namespace AppLogic.Presenter
         [HotkeyHandler]
         public async Task PasteToNotepad(Hotkey _, CancellationToken token)
         {
-            await Task.CompletedTask;
-            Host.ShowNotepad(GetClipboardText());
+            await Host.ShowNotepad(GetClipboardText());
         }
 
         /// <summary>
@@ -216,8 +215,7 @@ namespace AppLogic.Presenter
         [HotkeyHandler]
         public async Task OpenNotepad(Hotkey _, CancellationToken token)
         {
-            await Task.CompletedTask;
-            Host.ShowNotepad(null);
+            await Host.ShowNotepad(null);
         }
 
 
