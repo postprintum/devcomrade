@@ -32,7 +32,7 @@ When it comes to pasting text, **DevComrade** is different from many similar uti
 
 # To try it out from the source code: 
 
-- Download and install [.NET Core 3.1 SDK](https://download.visualstudio.microsoft.com/download/pr/547f9f81-599a-4b58-9322-d1d158385df6/ebe3e02fd54c29487ac32409cb20d352/dotnet-sdk-3.1.401-win-x64.exe), if you haven't got it already.
+- Download and install [.NET Core 3.1 SDK](https://download.visualstudio.microsoft.com/download/pr/547f9f81-599a-4b58-9322-d1d158385df6/ebe3e02fd54c29487ac32409cb20d352/dotnet-sdk-3.1.401-win-x64.exe), if you haven't got it already. That's the only prerequisite tool, Visual Studio or Visual Studio Code isn't required to build this app.
 
 - Download and unzip [the source](https://github.com/postprintum/devcomrade/archive/main.zip), or use `git` to clone the repo to a folder of your choice, e.g.:
     ```
