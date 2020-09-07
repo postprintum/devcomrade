@@ -28,9 +28,9 @@ When it comes to pasting text, **DevComrade** is different from many similar uti
 
 **DevComrade** is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.1) and uses Windows Forms for its very simple, context-menu-style UI. 
 
-**It is still very much a work in progress**. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will be implemented soon and this page will be updated. 
+**It is still very much a work in progress**. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will be implemented soon and this page will be updated. Meanwhile, to build and run from the source:
 
-**Meanwhile, feel free to clone this repo, compile it and try it out**:
+# Feel free to clone this repo, compile it and try it out
 
 - Download and install [.NET Core 3.1 SDK](https://download.visualstudio.microsoft.com/download/pr/547f9f81-599a-4b58-9322-d1d158385df6/ebe3e02fd54c29487ac32409cb20d352/dotnet-sdk-3.1.401-win-x64.exe), if you haven't got it already.
 
