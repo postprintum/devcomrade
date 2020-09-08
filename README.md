@@ -7,7 +7,7 @@ Copy-pasting from the online docs, StackOverflow or numerous blogs can be a tedi
 
 Or, have you ever been annoyed with some broken formatting, indentation, inconsistent tabs/spaces when you paste a piece of code into Visual Studio Code editor, a blog post or an email message? A typical workaround for that is to use the good old `Notepad.exe` as a buffer.
 
-Now I have two dedicated hotkeys for that, **<kbd>Win</kbd>+<kbd>Ins</kbd> (paste as single line) and <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Ins</kbd> (paste as multiple lines)**, which uniformly work across all apps and browsers and remove the trailing empty lines and the last line's CR/LF ending.
+Now I have two dedicated hotkeys for that, **<kbd>Win</kbd>+<kbd>Ins</kbd> (paste as single line) and <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Ins</kbd> (paste as multiple lines)**, which uniformly work across all apps and browsers. It also remove the trailing empty lines and the last line's CR/LF ending, so nothing gets automatically executed.
 
 One other source of disappointment for me has always been how custom keyboard hotkeys work with Windows Shell shortcuts. It is a common struggle to find a convenient hotkey combination that still can be assigned to start a custom app. E.g., it is impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed.
 
