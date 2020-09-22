@@ -7,7 +7,7 @@
 
 # Introduction
 
-**DevComrade** is a Windows copy/paste/run productivity improvement tool for developers. 
+**DevComrade** is a free and open-source Windows copy/paste/run productivity improvement tool for developers. 
 
 Copy-pasting from the online docs, StackOverflow or numerous blogs can be a tedious and sometimes even a dangerous task. Does the following sound familiar: you paste some text from a web page into a Terminal command line, and it gets executed immediately, before you even have a chance to edit it? Only because there was a CR/LF character at the end of the clipboard text.
 
