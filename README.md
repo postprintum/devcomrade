@@ -2,7 +2,8 @@
 
 # What's new
 
-- `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Monitoring Clipboard Contents API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This enables pasting plain text for *any* Windows application. It can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or the .config file.
+- `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This enables pasting plain text by default for *all* Windows applications using their native UI and keyboard bindings. It can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the `.config` file.
+- You can now press <kbd>Control</kbd>+<kbd>Enter</kbd> to hide the Internal Notepad (invoked with <kbd>Alt</kbd>+<kbd>Ins</kbd>) and paste its content into the currently active application.
 
 # Introduction
 
@@ -58,7 +59,6 @@ Once run, DevComrade shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade I
 
 - Press <kbd>Win</kbd>+<kbd>F10</kbd> to see the list of the available shortcuts and actions.
 - Copy some code into the Clipboard and try <kbd>Alt</kbd>+<kbd>Ins</kbd>, to see it pasted into the instant internal Notepad pop-up window. Press <kbd>Esc</kbd> to simply hide it when finished, or <kbd>Win</kbd>+<kbd>&#x5c;</kbd> to open it again. 
-- You can also press <kbd>Control</kbd>+<kbd>Enter</kbd> to paste the current content of the Internal Notepad into the active application.
 - Press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>E</kbd> to open Windows Terminal then <kbd>Win</kbd>+<kbd>Ins</kbd> to paste the Clipboard's content as a single line of text. It won't get executed until your press <kbd>Enter</kbd>.
 - Copy any URL into clipboard (e.g., from a console window output, spaces and broken lines are OK), then press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>O</kbd> to open it in your default web browser.
 
