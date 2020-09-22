@@ -112,6 +112,12 @@ namespace AppLogic.Helpers
         public const uint GA_ROOT = 2;
         public const uint GA_ROOTOWNER = 3;
 
+        public const uint WS_POPUP = 0x80000000U;
+
+        public const uint WM_CLIPBOARDUPDATE = 0x031D;
+
+        public static IntPtr HWND_MESSAGE = new IntPtr(-3);
+
         public enum PROCESS_DPI_AWARENESS
         {
             Process_DPI_Unaware = 0,
@@ -385,5 +391,9 @@ namespace AppLogic.Helpers
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetActiveWindow();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool AddClipboardFormatListener(IntPtr hwnd);
     }
 }

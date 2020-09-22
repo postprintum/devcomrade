@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Media;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -27,17 +28,16 @@ namespace AppLogic.Presenter
     internal partial class HotkeyHandlerHost :
         Container,
         IMessageFilter,
+        INotifyPropertyChanged,
         IHotkeyHandlerHost
     {
         const int ASYNC_LOCK_TIMEOUT = 250;
-        const int FOREGROUND_WINDOW_TRACKING_INTERVAL = 250;
+        const int CLIPBOARD_MONITORING_DELAY = 100;
 
         // classes which provide hotkey handlers
         private int _hotkeyId = 0; // IDs for Win32 RegisterHotKey
 
         private int _menuActive = 0;
-
-        private IntPtr _trackedForegroundWindow = IntPtr.Zero;
 
         // SemaphoreSlim as an async lock for hotkey handlers to avoid re-rentrancy
         private readonly SemaphoreSlim _asyncLock = new SemaphoreSlim(1);
@@ -70,15 +70,17 @@ namespace AppLogic.Presenter
 
         private readonly Lazy<Notepad> _notepad;
 
+        private readonly Lazy<ClipboardFormatMonitor> _clipboardFormatMonitor;
+
         private void Quit() => _cts.Cancel();
 
         private void OnEnterMenu() => _menuActive++;
 
         private void OnExitMenu() => _menuActive--;
 
-        private bool IsMenuActive => _menuActive > 0;
+        private bool IsMenuActive => _menuActive > 0; 
 
-        private ValueTask<IDisposable> WithLockAsync() => 
+        private ValueTask<IDisposable> WithLockAsync() =>
             Disposable.CreateAsync(
                 () => _asyncLock.WaitAsync(this.Token),
                 () => _asyncLock.Release());
@@ -96,8 +98,17 @@ namespace AppLogic.Presenter
             _soundPlayer = new Lazy<SoundPlayer?>(CreateSoundPlayer, isThreadSafe: false);
             _menu = new Lazy<ContextMenuStrip>(CreateContextMenu, isThreadSafe: false);
             _notepad = new Lazy<Notepad>(CreateNotepad, isThreadSafe: false);
+            _clipboardFormatMonitor = new Lazy<ClipboardFormatMonitor>(
+                () => new ClipboardFormatMonitor(), isThreadSafe: false);
 
             this.Completion = RunAsync();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged = null!;
+
+        public void RaisePropertyChange([CallerMemberName] string propertyname = null!)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyname));
         }
 
         public Task AsTask()
@@ -134,27 +145,55 @@ namespace AppLogic.Presenter
             }
             if (folder == null || !Directory.Exists(folder))
             {
-                folder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);           
+                folder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             }
             Directory.SetCurrentDirectory(folder);
         }
 
-        private void InitForegroundWindowTracking()
+        private void InitializeClipboardFormatMonitoring()
         {
-            var timer = new System.Windows.Forms.Timer(this) 
-            { 
-                Interval = FOREGROUND_WINDOW_TRACKING_INTERVAL 
-            };
-
-            timer.Tick += (s, e) =>
+            if (!this.IsFormattingRemovalEnabled)
             {
-                if (Utilities.TryGetThirdPartyForgroundWindow(out var hwnd))
-                {
-                    _trackedForegroundWindow = hwnd;
-                }
-            };
+                return;
+            }
 
-            //timer.Start();
+            var cachedClipboardText = String.Empty;
+            var updatingClipboard = false;
+
+            _clipboardFormatMonitor.Value.ClipboardUpdate += (s, e) =>
+                OnClipboardTextChangedAsync().IgnoreCancellations();
+
+            OnClipboardTextChangedAsync().IgnoreCancellations();
+
+            async Task OnClipboardTextChangedAsync()
+            {
+                if (this.IsFormattingRemovalPaused || updatingClipboard || !Clipboard.ContainsText())
+                {
+                    return;
+                }
+                var text = Clipboard.GetText(TextDataFormat.UnicodeText);
+                if (text != cachedClipboardText ||
+                    Clipboard.ContainsText(TextDataFormat.Html) ||
+                    Clipboard.ContainsText(TextDataFormat.Rtf))
+                {
+                    cachedClipboardText = text
+                        .UnixifyLineEndings()
+                        .TrimTrailingEmptyLines()
+                        .TrimEnd()
+                        .WindowsifyLineEndings();
+
+                    updatingClipboard = true;
+                    try
+                    {
+                        Clipboard.SetText(cachedClipboardText);
+                        await InputHelpers.InputYield(delay: CLIPBOARD_MONITORING_DELAY, token: this.Token);
+                    }
+                    finally
+                    {
+                        updatingClipboard = false;
+                    }
+                }
+            }
         }
 
         private void InitializeHotkeys()
@@ -207,7 +246,7 @@ namespace AppLogic.Presenter
         private SoundPlayer? CreateSoundPlayer()
         {
             if (!Configuration.GetOption("playNotificationSound", defaultValue: true))
-            { 
+            {
                 return null;
             }
 
@@ -234,36 +273,6 @@ namespace AppLogic.Presenter
             }
 
             return soundPlayer;
-        }
-
-        private const string AUTORUN_REGKEY = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
-
-        private static bool IsAutorun()
-        {
-            var name = Application.ProductName;
-            using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: false);
-            var value = regKey.GetValue(name, String.Empty)?.ToString();
-            return value.IsNotNullNorEmpty() &&
-                File.Exists(value) &&
-                String.Compare(
-                    Path.GetFullPath(value.Trim()),
-                    Path.GetFullPath(Diagnostics.GetExecutablePath()),
-                    StringComparison.OrdinalIgnoreCase) == 0;
-        }
-
-        private static void SetAutorun()
-        {
-            var name = Application.ProductName;
-            var value = Diagnostics.GetExecutablePath();
-            using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: true);
-            regKey.SetValue(name, value, RegistryValueKind.String);
-        }
-
-        private static void ClearAutorun()
-        {
-            var name = Application.ProductName;
-            using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: true);
-            regKey.DeleteValue(name);
         }
 
         private async Task HandleHotkeyAsync(HotkeyHandler hotkeyHandler)
@@ -323,13 +332,9 @@ namespace AppLogic.Presenter
 
         private delegate void MenuItemEventHandler(object s, EventArgs e);
 
-        private delegate bool? MenuItemStateCallback();
+        private delegate void MenuItemSetUpdaterCallback(Action<bool> updater);
 
         private static void About(object? s, EventArgs e) => Diagnostics.ShellExecute(ABOUT_URL);
-
-        private static void None(object? s, EventArgs e) { }
-
-        private static bool? None() => null;
 
         private static void Feedback(object? s, EventArgs e) => Diagnostics.ShellExecute(FEEDBACK_URL);
 
@@ -380,21 +385,15 @@ namespace AppLogic.Presenter
             }
         }
 
-        private static void AutoStart(object? s, EventArgs e)
+        private void AutoStart(object? s, EventArgs e)
         {
-            if (s is ToolStripMenuItem menuItem)
-            {
-                if (menuItem.Checked)
-                {
-                    ClearAutorun();
-                    menuItem.Checked = false;
-                }
-                else
-                {
-                    SetAutorun();
-                    menuItem.Checked = IsAutorun();
-                }
-            }
+            // s is ToolStripMenuItem menuItem
+            this.IsAutorun = !this.IsAutorun;
+        }
+
+        private void PauseFormattingRemoval(object? s, EventArgs e)
+        {
+            this.IsFormattingRemovalPaused = !this.IsFormattingRemovalPaused;
         }
 
         private void Exit(object? s, EventArgs e)
@@ -402,9 +401,12 @@ namespace AppLogic.Presenter
             Quit();
         }
 
-        private static (string, MenuItemEventHandler, MenuItemStateCallback) GetSeparatorMenuItem()
+        private static (
+            string,
+            MenuItemEventHandler?,
+            MenuItemSetUpdaterCallback?) GetSeparatorMenuItem()
         {
-            return ("-", None, None);
+            return ("-", null, null);
         }
 
         #endregion
@@ -412,7 +414,10 @@ namespace AppLogic.Presenter
         /// <summary>
         /// Provide tray menu items
         /// </summary>
-        private IEnumerable<(string, MenuItemEventHandler, MenuItemStateCallback)> GetMenuItems()
+        private IEnumerable<(
+            string,
+            MenuItemEventHandler?,
+            MenuItemSetUpdaterCallback?)> GetMenuItems()
         {
             // first add hotkey handlers which also have menuItem in the config file
             var handlers = _handlersByHotkeyNameMap.Values
@@ -430,15 +435,15 @@ namespace AppLogic.Presenter
                         var hotkeyTitle = Utilities.GetHotkeyTitle(hotkey.Mods!.Value, hotkey.Vkey!.Value);
                         menuItemText = $"{hotkey.MenuItem}|{hotkeyTitle}";
                     }
-                    else 
+                    else
                     {
                         menuItemText = hotkey.MenuItem!;
                     }
 
                     yield return (
-                        menuItemText, 
-                        (s, e) => HandleHotkeyAsync(handler).IgnoreCancellations(), 
-                        None);
+                        menuItemText,
+                        (s, e) => HandleHotkeyAsync(handler).IgnoreCancellations(),
+                        null);
 
                     if (hotkey.AddSeparator)
                     {
@@ -448,21 +453,49 @@ namespace AppLogic.Presenter
                 yield return GetSeparatorMenuItem();
             }
 
-            yield return ("Auto Start", AutoStart, () => IsAutorun());
-            yield return ("Edit Local Config", EditLocalConfig, None);
-            yield return ("Edit Roaming Config", EditRoamingConfig, None);
-            yield return ("Restart", Restart, None);
+            yield return ("Auto Start", AutoStart, update => 
+            {
+                update(this.IsAutorun);
+                this.PropertyChanged += (s, e) =>
+                {
+                    if (String.CompareOrdinal(e.PropertyName, nameof(IsAutorun)) == 0)
+                    {
+                        update(this.IsAutorun);
+                    }
+                };
+            });
+
+            if (this.IsFormattingRemovalEnabled)
+            {
+                yield return (
+                    $"Pause &Formattting Removal for {this.PauseFormattingRemovalTimeout} min", 
+                    PauseFormattingRemoval, update => 
+                    {
+                        update(this.IsFormattingRemovalPaused);
+                        this.PropertyChanged += (s, e) =>
+                        {
+                            if (String.CompareOrdinal(e.PropertyName, nameof(IsFormattingRemovalPaused)) == 0)
+                            {
+                                update(this.IsFormattingRemovalPaused);
+                            }
+                        };
+                    });
+            }
+
+            yield return ("Edit Local Config", EditLocalConfig, null);
+            yield return ("Edit Roaming Config", EditRoamingConfig, null);
+            yield return ("Restart", Restart, null);
             if (!Diagnostics.IsAdmin())
             {
-                yield return ("Restart as Admin", RestartAsAdmin, None);
+                yield return ("Restart as Admin", RestartAsAdmin, null);
             }
-            yield return ("Prevent Sleep Mode", Feedback, None);
+            yield return ("Prevent Sleep Mode", Feedback, null);
             yield return GetSeparatorMenuItem();
-            yield return ($"About {Application.ProductName}", About, None);
-            yield return ("E&xit", Exit, None);
+            yield return ($"About {Application.ProductName}", About, null);
+            yield return ("E&xit", Exit, null);
         }
 
-        private EventHandler AsAsync(MenuItemEventHandler handler)
+        private EventHandler AsAsync(MenuItemEventHandler? handler)
         {
             // we make all click handlers async because 
             // we want the menu to be dismissed first
@@ -471,7 +504,7 @@ namespace AppLogic.Presenter
                 async Task handleAsync()
                 {
                     await InputHelpers.InputYield(token: this.Token);
-                    handler(s, e);
+                    handler?.Invoke(s, e);
                 }
                 handleAsync().IgnoreCancellations();
             }
@@ -484,7 +517,7 @@ namespace AppLogic.Presenter
             contextMenu.Opened += (s, e) => OnEnterMenu();
             contextMenu.Closed += (s, e) => OnExitMenu();
 
-            foreach (var (text, handler, queryState) in GetMenuItems())
+            foreach (var (text, handler, setUpdater) in GetMenuItems())
             {
                 if (text == "-")
                 {
@@ -502,11 +535,7 @@ namespace AppLogic.Presenter
                     }
                     var menuItem = new ToolStripMenuItem(left, image: null, AsAsync(handler));
                     menuItem.ShortcutKeyDisplayString = right;
-                    var state = queryState();
-                    if (state.HasValue)
-                    {
-                        menuItem.Checked = state.Value;
-                    }
+                    setUpdater?.Invoke(value => menuItem.Checked = value);
                     contextMenu.Items.Add(menuItem);
                 }
             }
@@ -516,7 +545,24 @@ namespace AppLogic.Presenter
 
         private Notepad CreateNotepad()
         {
-            return new Notepad(this.Token);
+            var notepad = new Notepad(this.Token);
+
+            notepad.ControlEnterPressed += (s, e) =>
+                PasteFromNotepadAsync().IgnoreCancellations();
+
+            return notepad;
+
+            async Task PasteFromNotepadAsync()
+            {
+                using var _lock = await WithLockAsync();
+                var text = notepad!.EditorText;
+                notepad!.Hide();
+                if (text.IsNotNullNorEmpty())
+                {
+                    await InputHelpers.InputYield(token: this.Token);
+                    await (this as IHotkeyHandlerHost).FeedTextAsync(text, this.Token);
+                }
+            }
         }
 
         private NotifyIcon CreateTrayIconMenu()
@@ -543,8 +589,8 @@ namespace AppLogic.Presenter
         private async Task RunAsync()
         {
             SetCurrentFolder();
-            InitForegroundWindowTracking();
             InitializeHotkeys();
+            InitializeClipboardFormatMonitoring();
 
             Application.AddMessageFilter(this);
             try
@@ -671,7 +717,7 @@ namespace AppLogic.Presenter
 
             showMenuAsync().IgnoreCancellations();
         }
-        
+
         async Task IHotkeyHandlerHost.ShowNotepad(string? text)
         {
             using var threadInputScope = AttachedThreadInputScope.Create();
@@ -688,12 +734,95 @@ namespace AppLogic.Presenter
 
             if (text != null)
             {
-                this.Notepad.SelectAll();
                 this.Notepad.Paste(text);
             }
         }
 
-        int IHotkeyHandlerHost.TabSize => 
+        int IHotkeyHandlerHost.TabSize =>
             Configuration.GetOption("tabSize", 2);
+
+        int PauseFormattingRemovalTimeout =>
+            Configuration.GetOption("pauseFormattingRemovalTimeout", 60);
+
+        internal bool IsFormattingRemovalEnabled =>
+            Configuration.GetOption("removeClipboardFormatting", defaultValue: true);
+
+        #region IsFormattingRemovalPaused
+
+        private CancellationTokenSource? _formattingRemovalPausedCts = null;
+
+        private bool _isFormattingRemovalPaused = false;
+
+        internal bool IsFormattingRemovalPaused
+        {
+            get => _isFormattingRemovalPaused;
+            set
+            {
+                if (value != _isFormattingRemovalPaused)
+                {
+                    SetValueAsync().IgnoreCancellations();
+                }
+
+                async Task SetValueAsync()
+                {
+                    _formattingRemovalPausedCts?.Cancel();
+                    _isFormattingRemovalPaused = value;
+
+                    if (!value)
+                    {
+                        RaisePropertyChange();
+                        return;
+                    }
+
+                    _formattingRemovalPausedCts =
+                        CancellationTokenSource.CreateLinkedTokenSource(this.Token);
+
+                    RaisePropertyChange();
+
+                    await Task.Delay(
+                        TimeSpan.FromMinutes(this.PauseFormattingRemovalTimeout), 
+                        _formattingRemovalPausedCts.Token);
+
+                    this.IsFormattingRemovalPaused = false;
+                }
+            }
+        }
+        #endregion
+
+        #region IsAutorun
+        private const string AUTORUN_REGKEY = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+
+        internal bool IsAutorun
+        {
+            get 
+            {
+                var valueName = Application.ProductName;
+                using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: false);
+                var value = regKey.GetValue(valueName, String.Empty)?.ToString();
+                return value.IsNotNullNorEmpty() &&
+                    File.Exists(value) &&
+                    String.Compare(
+                        Path.GetFullPath(value.Trim()),
+                        Path.GetFullPath(Diagnostics.GetExecutablePath()),
+                        StringComparison.OrdinalIgnoreCase) == 0;
+            }
+            set
+            {
+                var valueName = Application.ProductName;
+                using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: true);
+                if (value)
+                {
+                    var valueData = Diagnostics.GetExecutablePath();
+                    regKey.SetValue(valueName, valueData, RegistryValueKind.String);
+                }
+                else
+                {
+                    regKey.DeleteValue(valueName);
+                }
+                RaisePropertyChange();
+            }
+
+        }
+        #endregion
     }
 }

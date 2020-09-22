@@ -148,7 +148,6 @@ namespace AppLogic.Helpers
 
         /// <summary>
         /// Choose between Task.Exception or caught exception, like this:
-        /// </summary>
         /// <example>
         /// <code>
         /// var task = DoAsync(); 
@@ -156,6 +155,7 @@ namespace AppLogic.Helpers
         /// catch (Exception @caught) { Log(task.PickException(@caught); }
         /// </code>
         /// </example>		
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Exception PickException(this Task @this, Exception @caught)
         {
