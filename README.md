@@ -1,6 +1,11 @@
 <img src="./Art/menu.jpg" alt="DevComrade Win+F10 Menu" width="800"/>
 
-# Introduction 
+# What's new
+
+- `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Monitoring Clipboard Contents API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This enables pasting plain text for *any* Windows application. It can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or the .config file.
+
+# Introduction
+
 **DevComrade** is a Windows copy/paste/run productivity improvement tool for developers. 
 
 Copy-pasting from the online docs, StackOverflow or numerous blogs can be a tedious and sometimes even a dangerous task. Does the following sound familiar: you paste some text from a web page into a Terminal command line, and it gets executed immediately, before you even have a chance to edit it? Only because there was a CR/LF character at the end of the clipboard text.
@@ -52,7 +57,8 @@ When it comes to pasting text, **DevComrade** is different from many similar uti
 Once run, DevComrade shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" height="16"/> icon in the system tray. Some of the features to try out:
 
 - Press <kbd>Win</kbd>+<kbd>F10</kbd> to see the list of the available shortcuts and actions.
-- Copy some code into the Clipboard and try <kbd>Alt</kbd>+<kbd>Ins</kbd>, to see it pasted into the instant internal Notepad pop-up window. Hit <kbd>Esc</kbd> to simply hide it when finished, or <kbd>Win</kbd>+<kbd>&#x5c;</kbd> to open it again.
+- Copy some code into the Clipboard and try <kbd>Alt</kbd>+<kbd>Ins</kbd>, to see it pasted into the instant internal Notepad pop-up window. Press <kbd>Esc</kbd> to simply hide it when finished, or <kbd>Win</kbd>+<kbd>&#x5c;</kbd> to open it again. 
+- You can also press <kbd>Control</kbd>+<kbd>Enter</kbd> to paste the current content of the Internal Notepad into the active application.
 - Press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>E</kbd> to open Windows Terminal then <kbd>Win</kbd>+<kbd>Ins</kbd> to paste the Clipboard's content as a single line of text. It won't get executed until your press <kbd>Enter</kbd>.
 - Copy any URL into clipboard (e.g., from a console window output, spaces and broken lines are OK), then press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>O</kbd> to open it in your default web browser.
 
