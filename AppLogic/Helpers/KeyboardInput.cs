@@ -15,6 +15,7 @@ namespace AppLogic.Helpers
 {
     internal static class KeyboardInput
     {
+        const int CHAR_FEED_DELAY = WinApi.USER_TIMER_MINIMUM;
         const int KEYBOARD_POLL_DELAY = WinApi.USER_TIMER_MINIMUM;
         const uint QS_KEYBOARD = WinApi.QS_KEY | WinApi.QS_HOTKEY;
 
@@ -42,7 +43,7 @@ namespace AppLogic.Helpers
             var toogleKeys = new[]
             {
                 // https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-                WinApi.VK_NUMLOCK, WinApi.VK_SCROLL, WinApi.VK_CAPITAL, WinApi.VK_ESCAPE,
+                WinApi.VK_NUMLOCK, WinApi.VK_SCROLL, WinApi.VK_CAPITAL,
                 0xE7, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1F, 0xFF
             };
             return Enumerable.Range(1, 256).Where(key => !toogleKeys.Contains(key)).ToArray();
@@ -64,8 +65,8 @@ namespace AppLogic.Helpers
             {
                 if (IsKeyPressed(key))
                 {
-                    SimulateKeyUp((uint)key);
                     SimulateKeyUp((uint)key, extended: true);
+                    SimulateKeyUp((uint)key);
                 }
             }
         }
@@ -77,13 +78,17 @@ namespace AppLogic.Helpers
             {
                 ClearKeyboardState();
 
-                while (IsAnyKeyPressed())
+                while (true)
                 {
                     if (IsKeyPressed(WinApi.VK_ESCAPE))
                     {
                         throw new TaskCanceledException();
                     }
-                    await InputHelpers.InputYield(QS_KEYBOARD, KEYBOARD_POLL_DELAY, token);
+                    if (!IsAnyKeyPressed())
+                    {
+                        break;
+                    }
+                    await InputHelpers.InputYield(delay: KEYBOARD_POLL_DELAY, token: token);
                 }
             }
             finally
@@ -96,7 +101,7 @@ namespace AppLogic.Helpers
         {
             input.type = WinApi.INPUT_KEYBOARD;
             input.union.keyboard.wVk = 0;
-            input.union.keyboard.wScan = c;
+            input.union.keyboard.wScan = (ushort)c;
             input.union.keyboard.dwFlags = WinApi.KEYEVENTF_UNICODE;
             input.union.keyboard.time = 0;
             input.union.keyboard.dwExtraInfo = UIntPtr.Zero;
@@ -119,7 +124,7 @@ namespace AppLogic.Helpers
                     {
                         token.ThrowIfCancellationRequested();
 
-                        if (WinApi.GetForegroundWindow() != foregroundWindow || 
+                        if (WinApi.GetForegroundWindow() != foregroundWindow ||
                             IsAnyKeyPressed())
                         {
                             break;
@@ -129,8 +134,11 @@ namespace AppLogic.Helpers
                         {
                             // we need this for correctly handling line breaks
                             // when pasting into Chromium's <textarea> 
+                            // or MS Teams chat
+                            SimulateKeyDown(WinApi.VK_SHIFT);
                             SimulateKeyDown(WinApi.VK_RETURN);
                             SimulateKeyUp(WinApi.VK_RETURN);
+                            SimulateKeyUp(WinApi.VK_SHIFT);
                         }
                         else
                         {
@@ -140,11 +148,7 @@ namespace AppLogic.Helpers
                                 break;
                             }
                         }
-
-                        if (InputHelpers.AnyInputMessage(WinApi.QS_ALLINPUT))
-                        {
-                            await InputHelpers.TimerYield(token: token);
-                        }
+                        await InputHelpers.InputYield(delay: CHAR_FEED_DELAY, token: token);
                     }
                     return true;
                 }

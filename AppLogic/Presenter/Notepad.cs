@@ -27,9 +27,16 @@ namespace AppLogic.Presenter
     [System.ComponentModel.DesignerCategory("")]
     internal class Notepad : Form
     {
-        public WebBrowser Browser { get; }
+        private WebBrowser Browser { get; }
 
         private readonly Task _initTask;
+
+        public event EventHandler? ControlEnterPressed;
+
+        internal void OnControlEnterPressed()
+        {
+            this.ControlEnterPressed?.Invoke(this, new EventArgs());
+        }
 
         private Lazy<IBrowser> BrowserInstance => new Lazy<IBrowser>(() =>
             this.Browser.ActiveXInstance as IBrowser ??
@@ -81,7 +88,7 @@ namespace AppLogic.Presenter
 
         public Notepad(CancellationToken token)
         {
-            this.Browser = new CustomWebBrowser()
+            this.Browser = new CustomWebBrowser(this)
             {
                 Dock = DockStyle.Fill,
                 AllowWebBrowserDrop = false,
@@ -162,7 +169,7 @@ namespace AppLogic.Presenter
             if (this.IsReady)
             {
                 this.Browser.Focus();
-                EditorElement.Value.focus();
+                this.EditorElement.Value.focus();
             }
         }
 
@@ -178,9 +185,12 @@ namespace AppLogic.Presenter
             {
                 return false;
             }
-            EditorElement.Value.createTextRange().select();
+            this.EditorElement.Value.createTextRange().select();
             return true;
         }
+
+        public string? EditorText =>
+            this.IsReady ? this.EditorElement.Value.value : null;
 
         public bool Paste(string? text)
         {
@@ -189,14 +199,18 @@ namespace AppLogic.Presenter
                 return false;
             }
 
-            var range = EditorElement.Value.createTextRange();
-            range.text = text ?? String.Empty;
+            var range = this.EditorElement.Value.createTextRange();
+            if (range.text != text)
+            {
+                range.text = text ?? String.Empty;
 
-            range = EditorElement.Value.createTextRange();
-            range.collapse(false);
-            range.select();
+                range = this.EditorElement.Value.createTextRange();
+                range.select();
 
-            return true;
+                return true;
+            }
+
+            return false;
         }
 
         #region WebBrowser stuff
@@ -215,14 +229,29 @@ namespace AppLogic.Presenter
             </style>
         </head>
         <body>
-            <textarea id='editor' wrap='off' tabIndex='1'></textarea>
+            <textarea id='editor' spellcheck='false' wrap='off' tabIndex='1'></textarea>
         </body>
         ";
 
         private class CustomWebBrowser : WebBrowser
         {
+            private readonly Notepad _parent;
+
+            public CustomWebBrowser(Notepad parent)
+            {
+                _parent = parent;
+            }
+
             protected override void OnPreviewKeyDown(PreviewKeyDownEventArgs e)
             {
+                if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Enter)
+                {
+                    e.IsInputKey = true;
+                    this._parent.OnControlEnterPressed();
+                    return;
+                }
+
+                // ignore these keys
                 if (e.Control &&
                     (e.KeyCode == Keys.N || e.KeyCode == Keys.L ||
                     e.KeyCode == Keys.O || e.KeyCode == Keys.P)
@@ -231,6 +260,7 @@ namespace AppLogic.Presenter
                     e.IsInputKey = true;
                     return;
                 }
+
                 base.OnPreviewKeyDown(e);
             }
         }
