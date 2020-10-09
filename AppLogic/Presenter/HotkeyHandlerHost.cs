@@ -157,7 +157,6 @@ namespace AppLogic.Presenter
                 return;
             }
 
-            var cachedClipboardText = String.Empty;
             var updatingClipboard = false;
 
             _clipboardFormatMonitor.Value.ClipboardUpdate += (s, e) =>
@@ -171,21 +170,24 @@ namespace AppLogic.Presenter
                 {
                     return;
                 }
-                var text = Clipboard.GetText(TextDataFormat.UnicodeText);
-                if (text != cachedClipboardText ||
-                    Clipboard.ContainsText(TextDataFormat.Html) ||
+
+                if (Clipboard.ContainsText(TextDataFormat.Html) ||
                     Clipboard.ContainsText(TextDataFormat.Rtf))
                 {
-                    cachedClipboardText = text
-                        .UnixifyLineEndings()
-                        .TrimTrailingEmptyLines()
-                        .TrimEnd()
-                        .WindowsifyLineEndings();
+                    var text = default(string);
+                    if (Clipboard.ContainsText(TextDataFormat.UnicodeText))
+                    {
+                        text = Clipboard.GetText(TextDataFormat.UnicodeText);
+                    }
+                    if (text.IsNullOrEmpty())
+                    {
+                        text = Clipboard.GetText(TextDataFormat.Text) ?? String.Empty;
+                    }
 
                     updatingClipboard = true;
                     try
                     {
-                        Clipboard.SetText(cachedClipboardText);
+                        Clipboard.SetText(text, TextDataFormat.UnicodeText);
                         await InputHelpers.InputYield(delay: CLIPBOARD_MONITORING_DELAY, token: this.Token);
                     }
                     finally
