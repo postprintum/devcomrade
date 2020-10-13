@@ -2,7 +2,7 @@
 
 # What's new
 
-- `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This enables pasting plain text by default for *all* Windows applications using their native UI and keyboard bindings. It can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the `.config` file.
+- `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This enables pasting plain text by default for *all* Windows applications using their native UI and keyboard bindings. It can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
 - You can now press <kbd>Control</kbd>+<kbd>Enter</kbd> to hide the Internal Notepad (invoked with <kbd>Alt</kbd>+<kbd>Ins</kbd>) and paste its content into the currently active application.
 
 # Introduction
@@ -19,7 +19,7 @@ One other source of disappointment for me has always been how custom keyboard ho
 
 **DevComrade** has been made to solve this problem, too. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. 
 
-Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples) in the `.config` file. E.g., generating a GUID:
+Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples) in the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config). E.g., generating a GUID:
 
 ```XML
 <hotkey name="InsertGuid" menuItem="Insert &amp;Guid" isScript="true">
