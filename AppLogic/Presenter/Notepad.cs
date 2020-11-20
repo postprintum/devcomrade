@@ -82,7 +82,7 @@ namespace AppLogic.Presenter
             using var key = Registry.CurrentUser.CreateSubKey(
                 String.Concat(@"Software\Microsoft\Internet Explorer\Main\FeatureControl\", feature),
                 RegistryKeyPermissionCheck.ReadWriteSubTree);
-            var appName = Path.GetFileName(process.MainModule.FileName);
+            var appName = Path.GetFileName(process!.MainModule!.FileName);
             key.SetValue(appName, (UInt32)value, RegistryValueKind.DWord);
         }
 

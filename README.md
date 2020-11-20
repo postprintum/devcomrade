@@ -1,13 +1,15 @@
-<img src="./Art/menu.jpg" alt="DevComrade Win+F10 Menu" width="800"/>
+# What is it?
+
+`DevComrade` is a free and open-source Windows copy/paste/run productivity improvement tool for developers. 
 
 # What's new
 
-- `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This enables pasting plain text by default for *all* Windows applications using their native UI and keyboard bindings. It can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
+- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain text system-wide. Or whatever it is the default keyboard shortcut / menu item for pasting in the currently open application.<br>
+`DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This enables pasting plain text by default for *all* Windows applications using their native UI and keyboard bindings. It can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
 - You can now press <kbd>Control</kbd>+<kbd>Enter</kbd> to hide the Internal Notepad (invoked with <kbd>Alt</kbd>+<kbd>Ins</kbd>) and paste its content into the currently active application.
+- Updated to use .NET 5.0
 
 # Introduction
-
-**DevComrade** is a free and open-source Windows copy/paste/run productivity improvement tool for developers. 
 
 Copy-pasting from the online docs, StackOverflow or numerous blogs can be a tedious and sometimes even a dangerous task. Does the following sound familiar: you paste some text from a web page into a Terminal command line, and it gets executed immediately, before you even have a chance to edit it? Only because there was a CR/LF character at the end of the clipboard text.
 
@@ -17,7 +19,7 @@ Now I have two dedicated hotkeys for that, **<kbd>Win</kbd>+<kbd>Ins</kbd> (past
 
 One other source of disappointment for me has always been how custom keyboard hotkeys work with Windows Shell shortcuts. It is a common struggle to find a convenient hotkey combination that still can be assigned to start a custom app. E.g., it is impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed.
 
-**DevComrade** has been made to solve this problem, too. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. 
+`DevComrade` has been made to solve this problem, too. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. 
 
 Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples) in the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config). E.g., generating a GUID:
 
@@ -30,15 +32,15 @@ Additional actions can be added as [C# scriptlets](https://github.com/dotnet/ros
 </hotkey>
 ```
 
-When it comes to pasting text, **DevComrade** is different from many similar utilities (e.g., from the still-excellent [Puretext](https://stevemiller.net/puretext/)) in how it uses [Win32 simulated input API](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput) to elaborately feed the text into the currently active window, character by character as though it was typed by a person. For example, it works well with Google's [Secure Shell App Chrome extension](https://chrome.google.com/webstore/detail/secure-shell-app/pnhechapfaindjhompbnflcldabbghjo?hl=en).
+When it comes to pasting text, `DevComrade` is different from many similar utilities (e.g., from the still-excellent [Puretext](https://stevemiller.net/puretext/)) in how it uses [Win32 simulated input API](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput) to elaborately feed the text into the currently active window, character by character as though it was typed by a person. For example, it works well with Google's [Secure Shell App Chrome extension](https://chrome.google.com/webstore/detail/secure-shell-app/pnhechapfaindjhompbnflcldabbghjo?hl=en).
 
-**DevComrade** is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.1) and uses Windows Forms for its very simple, context-menu-style UI. 
+`DevComrade` is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0) and uses Windows Forms for its very simple, context-menu-style UI. 
 
 **It is still very much a work in progress**. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will be implemented soon and this page will be updated. Meanwhile, to build and run from the source:
 
 # To try it out from the source code: 
 
-- Download and install [.NET Core 3.1 SDK](https://download.visualstudio.microsoft.com/download/pr/38136cfe-04d4-4ce8-a8ea-369a800021df/08b29e05cd798d96b5987b417a989b80/dotnet-sdk-3.1.403-win-x64.exe), if you haven't got it already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
+- Download and install [.NET 5.0 SDK](https://download.visualstudio.microsoft.com/download/pr/2892493e-df43-409e-af68-8b14aa75c029/53156c889fc08f01b7ed8d7135badede/dotnet-sdk-5.0.100-win-x64.exe), if you haven't got it already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
 
 - Download and unzip [the source](https://github.com/postprintum/devcomrade/archive/main.zip), or use `git` to clone the repo to a folder of your choice, e.g.:
     ```
@@ -53,9 +55,9 @@ When it comes to pasting text, **DevComrade** is different from many similar uti
     ```
     dotnet publish -r win10-x64 -c Release --self-contained false -p:PublishTrimmed=false .\DevComrade
     
-    start .\DevComrade\bin\Release\netcoreapp3.1\win10-x64\publish\DevComrade.exe
+    start .\DevComrade\bin\Release\net5.0-windows\win10-x64\DevComrade.exe 
     ```
-Once run, DevComrade shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" height="16"/> icon in the system tray. Some of the features to try out:
+Once run, `DevComrade` shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" height="16"/> icon in the system tray. Some of the features to try out:
 
 - Press <kbd>Win</kbd>+<kbd>F10</kbd> to see the list of the available shortcuts and actions.
 - Copy some code into the Clipboard and try <kbd>Alt</kbd>+<kbd>Ins</kbd>, to see it pasted into the instant internal Notepad pop-up window. Press <kbd>Esc</kbd> to simply hide it when finished, or <kbd>Win</kbd>+<kbd>&#x5c;</kbd> to open it again. 
@@ -63,6 +65,10 @@ Once run, DevComrade shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade I
 - Copy any URL into clipboard (e.g., from a console window output, spaces and broken lines are OK), then press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>O</kbd> to open it in your default web browser.
 
 This tool has been working well for my own personal needs, but outside that its future depends on your feedback. Feel free to [open an issue](https://github.com/postprintum/devcomrade/issues) or [send me a DM on Twitter](https://twitter.com/noseratio).
+
+<hr>
+
+<img src="./Art/menu.jpg" alt="DevComrade Win+F10 Menu" width="800"/>
 
 <hr>
 

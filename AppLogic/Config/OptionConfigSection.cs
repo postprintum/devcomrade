@@ -26,7 +26,7 @@ namespace AppLogic.Config
             {
                 void throwFormatException() => throw new FormatException(node.OuterXml);
 
-                var name = node.Attributes["name"]?.Value;
+                var name = node!.Attributes!["name"]?.Value;
                 if (name.IsNullOrWhiteSpace())
                 {
                     throwFormatException();

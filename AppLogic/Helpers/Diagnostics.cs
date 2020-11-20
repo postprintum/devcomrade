@@ -29,7 +29,7 @@ namespace AppLogic.Helpers
         {
             // trim trailing new line characters
             var trimmedMessage = message.TrimEnd(Environment.NewLine.ToCharArray());
-            Debug.WriteLine(string.Format($"{filePath}({lineNumber}): {trimmedMessage}"));
+            Debug.WriteLine($"{filePath}({lineNumber}): {trimmedMessage}");
         }
 
         [Conditional("DEBUG")]
@@ -39,7 +39,7 @@ namespace AppLogic.Helpers
             [CallerFilePath] string filePath = "")
         {
             // trim trailing new line characters
-            Debug.WriteLine(string.Format($"{filePath}({lineNumber}): {callerName}"));
+            Debug.WriteLine($"{filePath}({lineNumber}): {callerName}");
         }
 
         public static bool IsAdmin()
@@ -51,7 +51,7 @@ namespace AppLogic.Helpers
         public static string GetExecutablePath()
         {
             using var currentProcess = Process.GetCurrentProcess();
-            return currentProcess.MainModule.FileName;
+            return currentProcess!.MainModule!.FileName!;
         }
 
         public static void ShellExecute(string path)
