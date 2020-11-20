@@ -104,7 +104,7 @@ namespace AppLogic.Presenter
             this.Completion = RunAsync();
         }
 
-        public event PropertyChangedEventHandler PropertyChanged = null!;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public void RaisePropertyChange([CallerMemberName] string propertyname = null!)
         {
@@ -329,8 +329,8 @@ namespace AppLogic.Presenter
         }
 
         #region Menu Handlers
-        const string FEEDBACK_URL = "https://www.postprintum.com/devcomrade/feedback/";
-        const string ABOUT_URL = "https://www.postprintum.com/devcomrade/";
+        const string FEEDBACK_URL = "https://github.com/postprintum/devcomrade/issues";
+        const string ABOUT_URL = "https://github.com/postprintum/devcomrade";
 
         private delegate void MenuItemEventHandler(object s, EventArgs e);
 
@@ -352,7 +352,7 @@ namespace AppLogic.Presenter
                 var folder = Path.GetDirectoryName(path);
                 if (!Directory.Exists(folder))
                 {
-                    Directory.CreateDirectory(folder);
+                    Directory.CreateDirectory(folder!);
                 }
                 File.WriteAllText(path, Configuration.GetDefaultRoamingConfig(), Encoding.UTF8);
             }
@@ -800,7 +800,7 @@ namespace AppLogic.Presenter
             {
                 var valueName = Application.ProductName;
                 using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: false);
-                var value = regKey.GetValue(valueName, String.Empty)?.ToString();
+                var value = regKey?.GetValue(valueName, String.Empty)?.ToString();
                 return value.IsNotNullNorEmpty() &&
                     File.Exists(value) &&
                     String.Compare(
@@ -812,10 +812,14 @@ namespace AppLogic.Presenter
             {
                 var valueName = Application.ProductName;
                 using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: true);
+                if (regKey == null)
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
                 if (value)
                 {
                     var valueData = Diagnostics.GetExecutablePath();
-                    regKey.SetValue(valueName, valueData, RegistryValueKind.String);
+                    regKey!.SetValue(valueName, valueData, RegistryValueKind.String);
                 }
                 else
                 {
