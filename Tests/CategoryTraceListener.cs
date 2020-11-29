@@ -22,28 +22,28 @@ namespace Tests
             _categoty = categoty;
         }
 
-        public override void Write(string message)
+        public override void Write(string? message)
         {
         }
 
-        public override void WriteLine(string message)
+        public override void WriteLine(string? message)
         {
         }
 
         public override bool IsThreadSafe => true;
 
-        public override void WriteLine(string message, string category)
+        public override void WriteLine(string? message, string? category)
         {
             lock (_lock)
             {
                 if (String.CompareOrdinal(category, _categoty) == 0)
                 {
-                    _list.Add(message);
+                    _list.Add(message ?? String.Empty);
                 }
             }
         }
 
-        public override void Write(string message, string category)
+        public override void Write(string? message, string? category)
         {
             WriteLine(message, category);
         }
