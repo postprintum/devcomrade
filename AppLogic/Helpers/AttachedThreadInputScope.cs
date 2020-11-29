@@ -6,6 +6,7 @@
 #nullable enable
 
 using System;
+using System.Text;
 using System.Threading;
 
 namespace AppLogic.Helpers
@@ -39,9 +40,16 @@ namespace AppLogic.Helpers
             if (_currentThreadId != _foregroundThreadId)
             {
                 // attach to the foreground thread
-                if (!WinApi.AttachThreadInput(_foregroundThreadId, _currentThreadId, true))
+                if (!WinApi.AttachThreadInput(_currentThreadId, _foregroundThreadId, true))
                 {
-                    return;
+                    // unable to attach, see if the window is a Win10 Console Window
+                    var className = new StringBuilder(capacity: 256);
+                    WinApi.GetClassName(_foregroundWindow, className, className.Capacity - 1);
+                    if (String.CompareOrdinal("ConsoleWindowClass", className.ToString()) != 0)
+                    {
+                        return;
+                    }
+                    // consider attached to a console window
                 }
             }
 
@@ -58,7 +66,7 @@ namespace AppLogic.Helpers
                     _attached = false;
                     if (_currentThreadId != _foregroundThreadId)
                     {
-                        WinApi.AttachThreadInput(_foregroundThreadId, _currentThreadId, false);
+                        WinApi.AttachThreadInput(_currentThreadId, _foregroundThreadId, false);
                     }
                 }
             }
