@@ -4,7 +4,7 @@
 
 # What's new
 
-- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain text system-wide. Or whatever it is the default keyboard shortcut / menu item for pasting in the currently open application.<br>
+- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain text system-wide. Or whatever is the default keyboard shortcut / menu command for pasting in the currently active Windows application.<br>
 `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This enables pasting plain text by default for *all* Windows applications using their native UI and keyboard bindings. It can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
 - You can now press <kbd>Control</kbd>+<kbd>Enter</kbd> to hide the Internal Notepad (invoked with <kbd>Alt</kbd>+<kbd>Ins</kbd>) and paste its content into the currently active application.
 - Updated to use .NET 5.0
@@ -40,7 +40,7 @@ When it comes to pasting text, `DevComrade` is different from many similar utili
 
 # To try it out from the source code: 
 
-- Download and install [.NET 5.0 SDK](https://download.visualstudio.microsoft.com/download/pr/2892493e-df43-409e-af68-8b14aa75c029/53156c889fc08f01b7ed8d7135badede/dotnet-sdk-5.0.100-win-x64.exe), if you haven't got it already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
+- Download and install [.NET 5.0 SDK](https://download.visualstudio.microsoft.com/download/pr/674a9f7d-862e-4f92-91b6-f1cf3fed03ce/e07db4de77ada8da2c23261dfe9db138/dotnet-sdk-5.0.103-win-x64.exe), if you haven't got it already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
 
 - Download and unzip [the source](https://github.com/postprintum/devcomrade/archive/main.zip), or use `git` to clone the repo to a folder of your choice, e.g.:
     ```
