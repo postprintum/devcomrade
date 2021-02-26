@@ -160,40 +160,70 @@ namespace AppLogic.Presenter
             var updatingClipboard = false;
 
             _clipboardFormatMonitor.Value.ClipboardUpdate += (s, e) =>
-                OnClipboardTextChangedAsync().IgnoreCancellations();
+                HandleOnClipboardTextChangedAsync();
 
-            OnClipboardTextChangedAsync().IgnoreCancellations();
+            HandleOnClipboardTextChangedAsync();
+
+            async void HandleOnClipboardTextChangedAsync()
+            {
+                try
+                {
+                    await OnClipboardTextChangedAsync();
+                }
+                catch (Exception ex)
+                {
+                    if (ex is OperationCanceledException || ClipboardAccess.IsClipboardError(ex))
+                    {
+                        // absorb cancellations and clipboard errors
+                        Trace.WriteLine(ex.Message);
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
 
             async Task OnClipboardTextChangedAsync()
             {
-                if (this.IsFormattingRemovalPaused || updatingClipboard || !Clipboard.ContainsText())
+                if (updatingClipboard || this.IsFormattingRemovalPaused)
                 {
                     return;
                 }
 
-                if (Clipboard.ContainsText(TextDataFormat.Html) ||
-                    Clipboard.ContainsText(TextDataFormat.Rtf))
+                updatingClipboard = true;
+                try
                 {
-                    var text = default(string);
-                    if (Clipboard.ContainsText(TextDataFormat.UnicodeText))
+                    await ClipboardAccess.EnsureAsync(
+                        IntPtr.Zero,
+                        CLIPBOARD_MONITORING_DELAY,
+                        this.Token);
+
+                    if (!Clipboard.ContainsText())
                     {
-                        text = Clipboard.GetText(TextDataFormat.UnicodeText);
-                    }
-                    if (text.IsNullOrEmpty())
-                    {
-                        text = Clipboard.GetText(TextDataFormat.Text) ?? String.Empty;
+                        return;
                     }
 
-                    updatingClipboard = true;
-                    try
+                    if (Clipboard.ContainsText(TextDataFormat.Html) ||
+                        Clipboard.ContainsText(TextDataFormat.Rtf))
                     {
+                        var text = default(string);
+                        if (Clipboard.ContainsText(TextDataFormat.UnicodeText))
+                        {
+                            text = Clipboard.GetText(TextDataFormat.UnicodeText);
+                        }
+                        if (text.IsNullOrEmpty())
+                        {
+                            text = Clipboard.GetText(TextDataFormat.Text) ?? String.Empty;
+                        }
+
                         Clipboard.SetText(text, TextDataFormat.UnicodeText);
                         await InputHelpers.InputYield(delay: CLIPBOARD_MONITORING_DELAY, token: this.Token);
                     }
-                    finally
-                    {
-                        updatingClipboard = false;
-                    }
+                }
+                finally
+                {
+                    updatingClipboard = false;
                 }
             }
         }

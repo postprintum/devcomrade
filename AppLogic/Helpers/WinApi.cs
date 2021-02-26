@@ -13,6 +13,7 @@ namespace AppLogic.Helpers
 {
     internal static partial class WinApi 
     {
+        public const int CLIPBRD_E_CANT_OPEN = unchecked((int)0x800401d0);
         public const int WM_HOTKEY = 0x0312;
         public const int WM_ENDSESSION = 0x16;
         public const int WM_QUIT = 0x0012;
@@ -395,5 +396,11 @@ namespace AppLogic.Helpers
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool AddClipboardFormatListener(IntPtr hwnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool OpenClipboard(IntPtr hwnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool CloseClipboard();
     }
 }
