@@ -67,7 +67,11 @@ namespace AppLogic
         private static void ThreadExceptionHandler(object s, System.Threading.ThreadExceptionEventArgs e)
         {
             ObserveError(e.Exception);
-            Stop();
+            // don't exit if it's a non-critical clipboard error
+            if (!ClipboardAccess.IsClipboardError(e.Exception))
+            {
+                Stop();
+            }
         }
 
         private static readonly Guid mutexGuid = new Guid(
