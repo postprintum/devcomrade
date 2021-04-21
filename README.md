@@ -6,7 +6,10 @@
 
 - Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain text system-wide. Or whatever is the default keyboard shortcut / menu command for pasting in the currently active Windows application.<br>
 `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This enables pasting plain text by default for *all* Windows applications using their native UI and keyboard bindings. It can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
-- You can now press <kbd>Control</kbd>+<kbd>Enter</kbd> to hide the Internal Notepad (invoked with <kbd>Alt</kbd>+<kbd>Ins</kbd>) and paste its content into the currently active application.
+
+- Press <kbd>Win</kbd>+<kbd>Ins</kbd> to simulate typing of the current clipboard text into a console/terminal app or one of those pesky websites which mess with the browser's default paste functionality.
+
+- Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to open the **Internal Notepad** and edit a copy of the current clipboard text. Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close it and paste the edited content into the currently active application.
 - Updated to use .NET 5.0
 
 # Introduction
