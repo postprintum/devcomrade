@@ -24,7 +24,7 @@ One other source of disappointment for me has always been how custom keyboard ho
 
 `DevComrade` has been made to solve this problem, too. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. 
 
-Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples) in the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config). E.g., generating a GUID:
+Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/blob/master/docs/wiki/Scripting-API-Samples.md) in the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config). E.g., generating a GUID:
 
 ```XML
 <hotkey name="InsertGuid" menuItem="Insert &amp;Guid" isScript="true">
