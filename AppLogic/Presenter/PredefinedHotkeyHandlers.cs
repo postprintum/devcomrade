@@ -11,6 +11,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -68,6 +69,18 @@ namespace AppLogic.Presenter
                 .UnixifyLineEndings()
                 .TrimTrailingEmptyLines()
                 .ConvertToSingleLine();
+
+            await Host.FeedTextAsync(text, token);
+            Host.PlayNotificationSound();
+        }
+
+        /// <summary>
+        /// Remove formatting, spaces and paste as single line
+        /// </summary>
+        [HotkeyHandler]
+        public async Task PasteAsSingleLineNoSpaces(Hotkey _, CancellationToken token)
+        {
+            var text = GetClipboardText().RemoveSpaces();
 
             await Host.FeedTextAsync(text, token);
             Host.PlayNotificationSound();
