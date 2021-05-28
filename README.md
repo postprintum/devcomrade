@@ -4,12 +4,13 @@
 
 # What's new
 
-- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain text system-wide. Or whatever is the default keyboard shortcut / menu command for pasting in the currently active Windows application.<br>
-`DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This enables pasting plain text by default for *all* Windows applications using their native UI and keyboard bindings. It can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
-
-- Press <kbd>Win</kbd>+<kbd>Ins</kbd> to simulate typing of the current clipboard text into a console/terminal app or one of those pesky websites which mess with the browser's default paste functionality.
-
-- Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to open the **Internal Notepad** and edit a copy of the current clipboard text. Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close it and paste the edited content into the currently active application.
+- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain text system-wide (or any other default keyboard shortcut / menu command for pasting, specific to your currently open application).
+<br>`DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This behavior can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
+- The buit-in Clipboard Notepad:
+  - Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to edit the Clipboard text with DevComrade's built-in Notepad.
+  - Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close the built-in Notepad and save its content into the Clipboard.
+  - Press <kbd>Esc</kbd> to close it without saving.
+- Press <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Ins</kbd> to paste text with all spaces and line-breaks removed (e.g., for pasting a credit card or bank account details). As a reminder, <kbd>Win</kbd>+<kbd>Ins</kbd> pastes with only line-breaks removed.
 - Updated to use .NET 5.0
 
 # Introduction
@@ -43,7 +44,7 @@ When it comes to pasting text, `DevComrade` is different from many similar utili
 
 # To try it out from the source code: 
 
-- Download and install [.NET 5.0 SDK](https://download.visualstudio.microsoft.com/download/pr/2de622da-5342-48ec-b997-8b025d8ee478/5c11b643ea7534f749cd3f0e0302715a/dotnet-sdk-5.0.202-win-x64.exe), if you haven't got it already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
+- Download and install [.NET 5.0 SDK](https://download.visualstudio.microsoft.com/download/pr/475b587c-e586-4187-8feb-a602f3c6b449/b82433e88760e76d2ab591530e0784b9/dotnet-sdk-5.0.300-win-x64.exe), if you haven't got it installed already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
 
 - Download and unzip [the source](https://github.com/postprintum/devcomrade/archive/main.zip), or use `git` to clone the repo to a folder of your choice, e.g.:
     ```

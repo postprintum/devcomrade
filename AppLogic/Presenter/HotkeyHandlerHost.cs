@@ -580,19 +580,18 @@ namespace AppLogic.Presenter
             var notepad = new Notepad(this.Token);
 
             notepad.ControlEnterPressed += (s, e) =>
-                PasteFromNotepadAsync().IgnoreCancellations();
+                SaveNotepadToClipboard().IgnoreCancellations();
 
             return notepad;
 
-            async Task PasteFromNotepadAsync()
+            async Task SaveNotepadToClipboard()
             {
                 using var _lock = await WithLockAsync();
                 var text = notepad!.EditorText;
                 notepad!.Hide();
                 if (text.IsNotNullNorEmpty())
                 {
-                    await InputHelpers.InputYield(token: this.Token);
-                    await (this as IHotkeyHandlerHost).FeedTextAsync(text, this.Token);
+                    Clipboard.SetText(text, TextDataFormat.UnicodeText);
                 }
             }
         }

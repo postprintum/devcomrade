@@ -29,6 +29,11 @@ namespace AppLogic.Helpers
             return @this.Replace("\n", Environment.NewLine);
         }
 
+        public static string RemoveSpaces(this string @this)
+        {
+            return String.Concat(@this.Where(c => !Char.IsWhiteSpace(c)));
+        }
+
         public static string TrimTrailingEmptyLines(this string @this)
         {
             var regex = new Regex(@"^\s*$", RegexOptions.Singleline);
