@@ -10,7 +10,7 @@
   - Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to edit the Clipboard text with DevComrade's built-in Notepad.
   - Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close the built-in Notepad and save its content into the Clipboard.
   - Press <kbd>Esc</kbd> to close it without saving.
-- Press <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Ins</kbd> to paste text with all spaces and line-breaks removed (e.g., for pasting a credit card or bank account details).  
+- Press <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Ins</kbd> to paste text with all spaces and line-breaks removed (e.g., for pasting a credit card or bank account details). As a reminder, <kbd>Win</kbd>+<kbd>Ins</kbd> pastes with only line-breaks removed.
 - Updated to use .NET 5.0
 
 # Introduction
