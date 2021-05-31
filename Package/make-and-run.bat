@@ -1,11 +1,15 @@
-﻿@cd %~dp0
-dotnet publish -r win10-x64 -c Release --self-contained false -p:PublishTrimmed=false ..\DevComrade
+﻿@pushd %~dp0
+@call make.bat
 @if errorlevel 1 goto :error
-start ..\DevComrade\bin\Release\net5.0-windows\win10-x64\DevComrade.exe
-@goto :ok
+
+start ..\DevComrade\bin\Release\net5.0-windows7\win10-x64\DevComrade.exe
+@goto :success
 
 :error
 @echo Error exit code: %errorlevel%
-@exit %errorlevel%
+@popd
+@exit /b 1
 
-:ok
+:success
+@popd
+@exit /b 1

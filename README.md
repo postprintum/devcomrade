@@ -10,7 +10,7 @@
   - Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to edit the Clipboard text with DevComrade's built-in Notepad.
   - Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close the built-in Notepad and save its content into the Clipboard.
   - Press <kbd>Esc</kbd> to close it without saving.
-- Press <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Ins</kbd> to paste text with all spaces and line-breaks removed (e.g., for pasting a credit card or bank account details). As a reminder, <kbd>Win</kbd>+<kbd>Ins</kbd> pastes with only line-breaks removed.
+- Press <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Ins</kbd> to paste text with all spaces and line-breaks removed (e.g., for pasting a credit card or bank account details). As a reminder, <kbd>Win</kbd>+<kbd>Ins</kbd> pastes with only line-breaks removed.
 - Updated to use .NET 5.0
 
 # Introduction
@@ -19,7 +19,7 @@ Copy-pasting from the online docs, StackOverflow or numerous blogs can be a tedi
 
 Or, have you ever been annoyed with some broken formatting, indentation, inconsistent tabs/spaces when you paste a piece of code into Visual Studio Code editor, a blog post or an email message? A typical workaround for that is to use the good old `Notepad.exe` as a buffer.
 
-Now I have two dedicated hotkeys for that, **<kbd>Win</kbd>+<kbd>Ins</kbd> (paste as single line) and <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Ins</kbd> (paste as multiple lines)**, which uniformly work across all apps and browsers. It also removes the trailing empty lines and the last line's CR/LF ending, so nothing gets automatically executed.
+Now I have two dedicated hotkeys for that, **<kbd>Win</kbd>+<kbd>Ins</kbd> (paste as single line) and <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Ins</kbd> (paste as multiple lines)**, which uniformly work across all apps and browsers. It also removes the trailing empty lines and the last line's CR/LF ending, so nothing gets automatically executed.
 
 One other source of disappointment for me has always been how custom keyboard hotkeys work with Windows Shell shortcuts. It is a common struggle to find a convenient hotkey combination that still can be assigned to start a custom app. E.g., it is impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed.
 
@@ -59,7 +59,7 @@ When it comes to pasting text, `DevComrade` is different from many similar utili
     ```
     dotnet publish -r win10-x64 -c Release --self-contained false -p:PublishTrimmed=false .\DevComrade
     
-    start .\DevComrade\bin\Release\net5.0-windows\win10-x64\DevComrade.exe 
+    start .\DevComrade\bin\Release\net5.0-windows7\win10-x64\DevComrade.exe 
     ```
 Once run, `DevComrade` shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" height="16"/> icon in the system tray. Some of the features to try out:
 
