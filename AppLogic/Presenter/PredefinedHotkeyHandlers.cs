@@ -50,10 +50,7 @@ namespace AppLogic.Presenter
         [HotkeyHandler]
         public async Task PasteUnformatted(Hotkey _, CancellationToken token)
         {
-            var text = GetClipboardText()
-                .UnixifyLineEndings()
-                .TrimTrailingEmptyLines()
-                .TrimEnd();
+            var text = GetClipboardText().UnixifyLineEndings();
 
             await Host.FeedTextAsync(text, token);
             Host.PlayNotificationSound();
