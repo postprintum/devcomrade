@@ -50,7 +50,7 @@ namespace AppLogic.Presenter
                 Parent = WinApi.HWND_MESSAGE,
             };
 
-			base.CreateHandle(cp);
+            base.CreateHandle(cp);
 
             InitWithRetry().IgnoreCancellations();
         }
