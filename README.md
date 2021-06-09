@@ -4,9 +4,8 @@
 
 # What's new
 
-- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain text system-wide (or any other default keyboard shortcut / menu command for pasting, specific to your currently open application).
-<br>`DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text by default (using [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This behavior can be controlled by the <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
-- The buit-in Clipboard Notepad:
+- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain, unformatted text system-wide. Or if your currently open application has any other default keyboard shortcut / menu item for pasting, that should work, too. By default, `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text on-the-fly (via [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This behavior can be controlled by <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
+- The new buit-in Clipboard Notepad:
   - Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to edit the Clipboard text with DevComrade's built-in Notepad.
   - Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close the built-in Notepad and save its content into the Clipboard.
   - Press <kbd>Esc</kbd> to close it without saving.
