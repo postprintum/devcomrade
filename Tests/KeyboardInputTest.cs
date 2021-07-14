@@ -95,7 +95,7 @@ namespace Tests
             Assert.IsTrue(foregroundEvent == BackgroundEvents.TextSent);
 
             // await for idle input
-            await InputHelpers.InputYield(delay: INPUT_IDLE_CHECK_INTERVAL, token: cts.Token);
+            await InputUtils.InputYield(delay: INPUT_IDLE_CHECK_INTERVAL, token: cts.Token);
 
             // notify the background coroutine about the text we've actually received
             yield return (ForegroundEvents.TextReceived,
@@ -110,7 +110,7 @@ namespace Tests
             Assert.IsTrue(foregroundEvent == BackgroundEvents.TextSent);
 
             // await for idle input
-            await InputHelpers.InputYield(delay: INPUT_IDLE_CHECK_INTERVAL, token: cts.Token);
+            await InputUtils.InputYield(delay: INPUT_IDLE_CHECK_INTERVAL, token: cts.Token);
 
             // notify the background coroutine about the text we've actually received
             var text = textBox.Text.Replace(Environment.NewLine, "\n");

@@ -38,7 +38,7 @@ namespace AppLogic.Presenter
                 await Task.Delay(retryDelay);
             }
 
-            throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            throw WinUtils.CreateExceptionFromLastWin32Error();
         }
 
         public ClipboardFormatMonitor()

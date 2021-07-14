@@ -28,7 +28,7 @@ namespace Tests
                 Assert.IsTrue(SynchronizationContext.Current is WindowsFormsSynchronizationContext);
 
                 sw.Start();
-                await InputHelpers.TimerYield(1000);
+                await InputUtils.TimerYield(1000);
                 sw.Stop();
             });
 

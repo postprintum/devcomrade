@@ -8,6 +8,7 @@
 using AppLogic.Helpers;
 using AppLogic.Models;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -75,9 +76,9 @@ namespace AppLogic.Presenter
         /// Remove formatting, spaces and paste as single line
         /// </summary>
         [HotkeyHandler]
-        public async Task PasteAsSingleLineNoSpaces(Hotkey _, CancellationToken token)
+        public async Task PasteAsNumber(Hotkey _, CancellationToken token)
         {
-            var text = GetClipboardText().RemoveSpaces();
+            var text = GetClipboardText().Where(c => Char.IsDigit(c) || c == '.').AsString();
 
             await Host.FeedTextAsync(text, token);
             Host.PlayNotificationSound();
@@ -157,7 +158,7 @@ namespace AppLogic.Presenter
         [HotkeyHandler]
         public async Task RunWindowsTerminal(Hotkey _, CancellationToken token)
         {
-            if (await Utilities.ActivateProcess("WINDOWSTERMINAL", token))
+            if (await WinUtils.ActivateProcess("WINDOWSTERMINAL", token))
             {
                 return;
             }
@@ -176,12 +177,45 @@ namespace AppLogic.Presenter
         }
 
         /// <summary>
+        /// Run Windows Terminal as Admin
+        /// </summary>
+        [HotkeyHandler]
+        public async Task RunWindowsTerminalAsAdmin(Hotkey _, CancellationToken token)
+        {
+            if (Diagnostics.IsAdmin())
+            {
+                await RunWindowsTerminal(_, token);
+                return;
+            }
+
+            var startInfo = new ProcessStartInfo
+            {
+                UseShellExecute = true,
+                Arguments = $"-d \"{Directory.GetCurrentDirectory()}\"",
+                FileName = "wt.exe",
+                Verb = "runas"
+            };
+            try
+            {
+                using var process = Process.Start(startInfo);
+            }
+            catch (Win32Exception ex)
+            {
+                if (ex.NativeErrorCode != WinApi.ERROR_CANCELLED)
+                {
+                    throw;
+                }
+            }
+            Host.PlayNotificationSound();
+        }
+
+        /// <summary>
         /// Run VS Code at the current folder
         /// </summary>
         [HotkeyHandler]
         public async Task RunVSCode(Hotkey _, CancellationToken token)
         {
-            if (await Utilities.ActivateProcess("CODE", token))
+            if (await WinUtils.ActivateProcess("CODE", token))
             {
                 return;
             }
@@ -204,7 +238,7 @@ namespace AppLogic.Presenter
         [HotkeyHandler]
         public async Task ShowMenu(Hotkey _, CancellationToken token)
         {
-            await Task.CompletedTask;
+            await Task.Yield();
             Host.ShowMenu();
         }
 

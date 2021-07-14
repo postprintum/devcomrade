@@ -13,7 +13,9 @@ namespace AppLogic.Helpers
 {
     internal static partial class WinApi 
     {
+        public const int E_FAIL = unchecked((int)0x80004005);
         public const int CLIPBRD_E_CANT_OPEN = unchecked((int)0x800401d0);
+
         public const int WM_HOTKEY = 0x0312;
         public const int WM_ENDSESSION = 0x16;
         public const int WM_QUIT = 0x0012;
@@ -114,10 +116,21 @@ namespace AppLogic.Helpers
         public const uint GA_ROOTOWNER = 3;
 
         public const uint WS_POPUP = 0x80000000U;
+        public static uint WS_EX_NOACTIVATE = 0x08000000U;
+        public static uint WS_EX_TOOLWINDOW = 0x00000080U;
 
         public const uint WM_CLIPBOARDUPDATE = 0x031D;
 
         public static IntPtr HWND_MESSAGE = new IntPtr(-3);
+
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate IntPtr WndProc(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        public const int GWL_WNDPROC = -4;
+
+        public const uint WM_USER = 0x0400;
+        public const uint WM_TEST = WM_USER + 1;
 
         public enum PROCESS_DPI_AWARENESS
         {
@@ -402,5 +415,31 @@ namespace AppLogic.Helpers
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool CloseClipboard();
+
+        [DllImport("user32")]
+        public static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr CreateWindowEx(
+            uint dwExStyle, string lpClassName, string lpWindowName, uint dwStyle,
+            int x, int y, int nWidth, int nHeight,
+            IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, IntPtr lpParam);
+
+        public static IntPtr SetWindowLong(IntPtr hWnd, int nIndex, IntPtr dwNewLong)
+        {
+            if (IntPtr.Size == Marshal.SizeOf<int>())
+                return new IntPtr(SetWindowLong32(hWnd, nIndex, dwNewLong.ToInt32()));
+            else
+                return SetWindowLong64(hWnd, nIndex, dwNewLong);
+        }
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
+        private static extern int SetWindowLong32(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtr")]
+        private static extern IntPtr SetWindowLong64(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        [DllImport("user32.dll", SetLastError = false)]
+        public static extern IntPtr GetDesktopWindow();
     }
 }

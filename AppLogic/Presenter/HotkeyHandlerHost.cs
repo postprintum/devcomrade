@@ -25,11 +25,11 @@ using System.Windows.Forms;
 namespace AppLogic.Presenter
 {
     [System.ComponentModel.DesignerCategory("")]
-    internal partial class HotkeyHandlerHost :
-        Container,
+    internal partial class HotkeyHandlerHost : Form,
         IMessageFilter,
         INotifyPropertyChanged,
-        IHotkeyHandlerHost
+        IHotkeyHandlerHost,
+        IContainer
     {
         const int ASYNC_LOCK_TIMEOUT = 250;
         const int CLIPBOARD_MONITORING_DELAY = 100;
@@ -44,6 +44,8 @@ namespace AppLogic.Presenter
 
         // when this is signalled, the container's RunAsync exits
         private readonly CancellationTokenSource _cts;
+
+        private readonly Container _componentContainer = new();
 
         // cancellation for RunAsync
         private CancellationToken Token => _cts.Token;
@@ -78,22 +80,20 @@ namespace AppLogic.Presenter
 
         private void OnExitMenu() => _menuActive--;
 
-        private bool IsMenuActive => _menuActive > 0; 
+        private bool IsMenuActive => _menuActive > 0;
 
         private ValueTask<IDisposable> WithLockAsync() =>
             Disposable.CreateAsync(
                 () => _asyncLock.WaitAsync(this.Token),
                 () => _asyncLock.Release());
 
-        // standard hotkey handler providers
-        private static IEnumerable<Type> GetHotkeyHandlerProviders()
-        {
-            yield return typeof(PredefinedHotkeyHandlers);
-            yield return typeof(ScriptHotkeyHandlers);
-        }
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        public HotkeyHandlerHost(CancellationToken token)
+        public HotkeyHandlerHost(CancellationToken token): base()
         {
+            this.ShowInTaskbar = false;
+            CreateHandle();
+
             _cts = CancellationTokenSource.CreateLinkedTokenSource(token);
             _soundPlayer = new Lazy<SoundPlayer?>(CreateSoundPlayer, isThreadSafe: false);
             _menu = new Lazy<ContextMenuStrip>(CreateContextMenu, isThreadSafe: false);
@@ -104,7 +104,24 @@ namespace AppLogic.Presenter
             this.Completion = RunAsync();
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        // standard hotkey handler providers
+        private static IEnumerable<Type> GetHotkeyHandlerProviders()
+        {
+            yield return typeof(PredefinedHotkeyHandlers);
+            yield return typeof(ScriptHotkeyHandlers);
+        }
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                var cp = base.CreateParams;
+                cp.Parent = WinApi.GetDesktopWindow();
+                cp.Style = unchecked((int)WinApi.WS_POPUP);
+                cp.ExStyle = unchecked((int)(WinApi.WS_EX_NOACTIVATE | WinApi.WS_EX_TOOLWINDOW));
+                return cp;
+            }
+        }
 
         public void RaisePropertyChange([CallerMemberName] string propertyname = null!)
         {
@@ -132,7 +149,7 @@ namespace AppLogic.Presenter
             }
             else
             {
-                var error = new Win32Exception(Marshal.GetLastWin32Error());
+                var error = WinUtils.CreateExceptionFromLastWin32Error();
                 throw new WarningException($"{hotkeyHandler.Hotkey.Name}: {error.Message}", error);
             }
         }
@@ -271,6 +288,8 @@ namespace AppLogic.Presenter
             {
                 _notepad.Value.Dispose();
             }
+
+            _componentContainer.Dispose();
 
             base.Dispose(disposing);
         }
@@ -464,7 +483,7 @@ namespace AppLogic.Presenter
                     string menuItemText;
                     if (hotkey.HasHotkey)
                     {
-                        var hotkeyTitle = Utilities.GetHotkeyTitle(hotkey.Mods!.Value, hotkey.Vkey!.Value);
+                        var hotkeyTitle = WinUtils.GetHotkeyTitle(hotkey.Mods!.Value, hotkey.Vkey!.Value);
                         menuItemText = $"{hotkey.MenuItem}|{hotkeyTitle}";
                     }
                     else
@@ -521,7 +540,6 @@ namespace AppLogic.Presenter
             {
                 yield return ("Restart as Admin", RestartAsAdmin, null);
             }
-            yield return ("Prevent Sleep Mode", Feedback, null);
             yield return GetSeparatorMenuItem();
             yield return ($"About {Application.ProductName}", About, null);
             yield return ("E&xit", Exit, null);
@@ -701,15 +719,16 @@ namespace AppLogic.Presenter
                 OnEnterMenu();
                 try
                 {
-                    var tcs = new TaskCompletionSource<DBNull>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    using var rego = this.Token.Register(() => tcs.TrySetCanceled());
+                    var menuClosedTcs = new TaskCompletionSource<DBNull>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-                    using var scope = EventHandlerScope<ToolStripDropDownClosedEventHandler>.Create(
-                        (s, e) => tcs.TrySetResult(DBNull.Value),
+                    using var rego = this.Token.Register(() => menuClosedTcs.TrySetCanceled());
+
+                    using var menuCloseScope = EventHandlerScope<ToolStripDropDownClosedEventHandler>.Create(
+                        (s, e) => menuClosedTcs.TrySetResult(DBNull.Value),
                         handler => this.Menu.Closed += handler,
                         handler => this.Menu.Closed -= handler);
 
-                    if (!Utilities.TryGetThirdPartyForgroundWindow(out var targetWindow))
+                    if (!WinUtils.TryGetThirdPartyForgroundWindow(out var targetWindow))
                     {
                         // special treatment for our Internal Notepad
                         if (_notepad.IsValueCreated && this._notepad.Value.ContainsFocus)
@@ -718,25 +737,28 @@ namespace AppLogic.Presenter
                         }
                         else
                         {
-                            targetWindow = Utilities.GetPrevActiveWindow();
+                            targetWindow = WinUtils.GetPrevActiveWindow();
                         }
                     }
 
                     using (var attachedInput = AttachedThreadInputScope.Create())
                     {
-                        // set thread focus to the menu window
+                        // steal the focus
+                        WinApi.SetForegroundWindow(this.Handle);
                         await InputHelpers.TimerYield(token: this.Token);
-                        WinApi.SetForegroundWindow(this.Menu.Handle);
+                    }
 
-                        this.Menu.Show(Cursor.Position);
-                        await tcs.Task;
-
-                        WinApi.SetForegroundWindow(targetWindow);
-
-                        // make sure the mouse cursor has refreshed
+                    try
+                    {
+                        this.Menu.Show(this, Cursor.Position);
+                        await menuClosedTcs.Task;
+                    }
+                    finally
+                    {
+                        // restore the focus
                         Cursor.Hide();
-                        await InputHelpers.TimerYield(token: this.Token);
                         Cursor.Show();
+                        WinApi.SetForegroundWindow(targetWindow);
                     }
                 }
                 finally
@@ -768,6 +790,25 @@ namespace AppLogic.Presenter
                 this.Notepad.Paste(text);
             }
         }
+
+        #region IContainer
+        public ComponentCollection Components => _componentContainer.Components;
+
+        public void Add(IComponent? component)
+        {
+            _componentContainer.Add(component);
+        }
+
+        public void Add(IComponent? component, string? name)
+        {
+            _componentContainer.Add(component, name);
+        }
+
+        public void Remove(IComponent? component)
+        {
+            _componentContainer.Remove(component);
+        }
+        #endregion
 
         int IHotkeyHandlerHost.TabSize =>
             Configuration.GetOption("tabSize", 2);
@@ -858,6 +899,7 @@ namespace AppLogic.Presenter
             }
 
         }
+
         #endregion
     }
 }

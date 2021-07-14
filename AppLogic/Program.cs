@@ -92,7 +92,7 @@ namespace AppLogic
         private static void Run()
         {
             WindowsFormsSynchronizationContext.AutoInstall = false;
-            Utilities.EnableMenuShortcutsUnderlining();
+            WinUtils.EnableMenuShortcutsUnderlining();
 
             Application.EnableVisualStyles();
             Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);

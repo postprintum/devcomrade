@@ -6,6 +6,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -17,6 +18,11 @@ namespace AppLogic.Helpers
     /// </summary>
     internal static class StringExtensions
     {
+        public static string AsString(this IEnumerable<char> @this)
+        {
+            return String.Concat(@this);
+        }
+
         public static string UnixifyLineEndings(this string @this)
         {
             // use only "\n" for line breaks
