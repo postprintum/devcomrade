@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using AppLogic.Events;
 
 namespace AppLogic.Presenter
 {
@@ -29,7 +30,10 @@ namespace AppLogic.Presenter
         IMessageFilter,
         INotifyPropertyChanged,
         IHotkeyHandlerHost,
-        IContainer
+        IContainer,
+        IEventTargetProp<ClipboardUpdateEventArgs>,
+        IEventTargetProp<ControlClipboardMonitoringEventArgs>,
+        IEventTargetHub
     {
         const int ASYNC_LOCK_TIMEOUT = 250;
         const int CLIPBOARD_MONITORING_DELAY = 100;
@@ -82,6 +86,12 @@ namespace AppLogic.Presenter
 
         private bool IsMenuActive => _menuActive > 0;
 
+        #region Events
+        EventTarget<ClipboardUpdateEventArgs> IEventTargetProp<ClipboardUpdateEventArgs>.Value { get; init; } = new();
+
+        EventTarget<ControlClipboardMonitoringEventArgs> IEventTargetProp<ControlClipboardMonitoringEventArgs>.Value { get; init; } = new();
+        #endregion
+
         private ValueTask<IDisposable> WithLockAsync() =>
             Disposable.CreateAsync(
                 () => _asyncLock.WaitAsync(this.Token),
@@ -99,7 +109,7 @@ namespace AppLogic.Presenter
             _menu = new Lazy<ContextMenuStrip>(CreateContextMenu, isThreadSafe: false);
             _notepad = new Lazy<Notepad>(CreateNotepad, isThreadSafe: false);
             _clipboardFormatMonitor = new Lazy<ClipboardFormatMonitor>(
-                () => new ClipboardFormatMonitor(), isThreadSafe: false);
+                () => new ClipboardFormatMonitor(this), isThreadSafe: false);
 
             this.Completion = RunAsync();
         }
@@ -175,9 +185,9 @@ namespace AppLogic.Presenter
             }
 
             var updatingClipboard = false;
+            this._clipboardFormatMonitor.Value.InitAsync().IgnoreCancellations();
 
-            _clipboardFormatMonitor.Value.ClipboardUpdate += (s, e) =>
-                HandleOnClipboardTextChangedAsync();
+            this.AddListener<ClipboardUpdateEventArgs>((s, e) => HandleOnClipboardTextChangedAsync());
 
             HandleOnClipboardTextChangedAsync();
 
@@ -235,7 +245,7 @@ namespace AppLogic.Presenter
                         }
 
                         Clipboard.SetText(text, TextDataFormat.UnicodeText);
-                        await InputHelpers.InputYield(delay: CLIPBOARD_MONITORING_DELAY, token: this.Token);
+                        await InputUtils.InputYield(delay: CLIPBOARD_MONITORING_DELAY, token: this.Token);
                     }
                 }
                 finally
@@ -346,7 +356,7 @@ namespace AppLogic.Presenter
             // try to get an instant async lock
             try
             {
-                await InputHelpers.TimerYield(token: this.Token);
+                await InputUtils.TimerYield(token: this.Token);
                 await hotkeyHandler.Callback(hotkeyHandler.Hotkey, this.Token);
             }
             finally
@@ -553,7 +563,7 @@ namespace AppLogic.Presenter
             {
                 async Task handleAsync()
                 {
-                    await InputHelpers.InputYield(token: this.Token);
+                    await InputUtils.InputYield(token: this.Token);
                     handler?.Invoke(s, e);
                 }
                 handleAsync().IgnoreCancellations();
@@ -723,7 +733,7 @@ namespace AppLogic.Presenter
 
                     using var rego = this.Token.Register(() => menuClosedTcs.TrySetCanceled());
 
-                    using var menuCloseScope = EventHandlerScope<ToolStripDropDownClosedEventHandler>.Create(
+                    using var menuCloseScope = SubscriptionScope<ToolStripDropDownClosedEventHandler>.Create(
                         (s, e) => menuClosedTcs.TrySetResult(DBNull.Value),
                         handler => this.Menu.Closed += handler,
                         handler => this.Menu.Closed -= handler);
@@ -745,7 +755,7 @@ namespace AppLogic.Presenter
                     {
                         // steal the focus
                         WinApi.SetForegroundWindow(this.Handle);
-                        await InputHelpers.TimerYield(token: this.Token);
+                        await InputUtils.TimerYield(token: this.Token);
                     }
 
                     try
@@ -840,16 +850,15 @@ namespace AppLogic.Presenter
                     _formattingRemovalPausedCts?.Cancel();
                     _isFormattingRemovalPaused = value;
 
+                    RaisePropertyChange(nameof(IsFormattingRemovalPaused));
+
                     if (!value)
                     {
-                        RaisePropertyChange();
                         return;
                     }
 
                     _formattingRemovalPausedCts =
                         CancellationTokenSource.CreateLinkedTokenSource(this.Token);
-
-                    RaisePropertyChange();
 
                     await Task.Delay(
                         TimeSpan.FromMinutes(this.PauseFormattingRemovalTimeout), 
@@ -884,7 +893,7 @@ namespace AppLogic.Presenter
                 using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: true);
                 if (regKey == null)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    throw WinUtils.CreateExceptionFromLastWin32Error();
                 }
                 if (value)
                 {

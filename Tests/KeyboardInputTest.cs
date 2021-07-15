@@ -65,7 +65,7 @@ namespace Tests
                 ShowInTaskbar = false
             };
 
-            using var formClosedHandlerScope = EventHandlerScope<FormClosedEventHandler>.Create(
+            using var formClosedHandlerScope = SubscriptionScope<FormClosedEventHandler>.Create(
                 (s, e) => cts.Cancel(),
                 handler => form.FormClosed += handler,
                 handler => form.FormClosed -= handler);

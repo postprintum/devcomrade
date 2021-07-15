@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Text.Encodings.Web;
 
 namespace AppLogic.Helpers
 {
@@ -94,6 +95,11 @@ namespace AppLogic.Helpers
 
             var removalRegex = new Regex($"^[\\x20\\t]{{{indentSize}}}", RegexOptions.Singleline);
             return String.Join('\n', lines.Select(l => removalRegex.Replace(l, String.Empty)));
+        }
+
+        public static string ConvertToHtmlPre(this string @this)
+        {
+            return $@"<pre>{HtmlEncoder.Default.Encode(@this)}</pre>";
         }
     }
 }

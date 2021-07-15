@@ -91,10 +91,10 @@ namespace AppLogic.Helpers
 
             using (AttachedThreadInputScope.Create())
             {
-                await InputHelpers.TimerYield(token: token);
+                await InputUtils.TimerYield(token: token);
                 WinApi.SetForegroundWindow(hwnd);
                 WinApi.ShowWindow(hwnd, showCmd);
-                await InputHelpers.TimerYield(token: token);
+                await InputUtils.TimerYield(token: token);
             }
             return true;
         }
