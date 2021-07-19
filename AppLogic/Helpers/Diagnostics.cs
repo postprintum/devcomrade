@@ -132,7 +132,7 @@ namespace AppLogic.Helpers
                         IntPtr.Zero, delay, 0,
                         (UIntPtr)(WinApi.WT_EXECUTEINPERSISTENTTHREAD | WinApi.WT_EXECUTEONLYONCE)))
                 {
-                    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                    throw WinUtils.CreateExceptionFromLastWin32Error();
                 }
 
                 return await tcs.Task;

@@ -6,8 +6,10 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Text.Encodings.Web;
 
 namespace AppLogic.Helpers
 {
@@ -17,6 +19,11 @@ namespace AppLogic.Helpers
     /// </summary>
     internal static class StringExtensions
     {
+        public static string AsString(this IEnumerable<char> @this)
+        {
+            return String.Concat(@this);
+        }
+
         public static string UnixifyLineEndings(this string @this)
         {
             // use only "\n" for line breaks
@@ -88,6 +95,28 @@ namespace AppLogic.Helpers
 
             var removalRegex = new Regex($"^[\\x20\\t]{{{indentSize}}}", RegexOptions.Singleline);
             return String.Join('\n', lines.Select(l => removalRegex.Replace(l, String.Empty)));
+        }
+
+
+        /*
+        StartHTML:0000000000
+        EndHTML:0000000000
+        StartFragment:0000000000
+        EndFragment:0000000000
+        <!DOCTYPE>
+        <HTML>
+        <HEAD>
+        <TITLE> The HTML Clipboard</TITLE>
+        </HEAD>
+        <BODY>
+        <!--StartFragment --><!--EndFragment -->
+        </BODY>
+        </HTML>        
+        */
+
+        public static string ToPreformattedHtml(this string @this)
+        {
+            return $@"<pre>{HtmlEncoder.Default.Encode(@this)}</pre>";
         }
     }
 }

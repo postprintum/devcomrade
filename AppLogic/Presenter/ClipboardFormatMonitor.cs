@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2020 by Postprintum Pty Ltd (https://www.postprintum.com),
+﻿// Copyright (C) 2020+ by Postprintum Pty Ltd (https://www.postprintum.com),
 // which licenses this file to you under Apache License 2.0,
 // see the LICENSE file in the project root for more information. 
 // Author: Andrew Nosenko (@noseratio)
@@ -10,14 +10,29 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using AppLogic.Events;
 
 namespace AppLogic.Presenter
 {
     internal class ClipboardFormatMonitor : NativeWindow
     {
-        public event EventHandler? ClipboardUpdate;
+        private IEventTargetHub EventTargetHub { get; init; }
 
-        private async Task InitWithRetry()
+        public ClipboardFormatMonitor(IEventTargetHub hub)
+        {
+            this.EventTargetHub = hub;
+
+            var cp = new CreateParams()
+            {
+                Caption = String.Empty,
+                Style = unchecked((int)WinApi.WS_POPUP),
+                Parent = WinApi.HWND_MESSAGE,
+            };
+
+            base.CreateHandle(cp);
+        }
+
+        public async Task StartAsync()
         {
             // AddClipboardFormatListener may fail when 
             // another app clipboard operation is in progress
@@ -38,28 +53,14 @@ namespace AppLogic.Presenter
                 await Task.Delay(retryDelay);
             }
 
-            throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
-        }
-
-        public ClipboardFormatMonitor()
-        {
-            var cp = new CreateParams()
-            {
-                Caption = String.Empty,
-                Style = unchecked((int)WinApi.WS_POPUP),
-                Parent = WinApi.HWND_MESSAGE,
-            };
-
-            base.CreateHandle(cp);
-
-            InitWithRetry().IgnoreCancellations();
+            throw WinUtils.CreateExceptionFromLastWin32Error();
         }
 
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == WinApi.WM_CLIPBOARDUPDATE)
             {
-                this.ClipboardUpdate?.Invoke(this, new EventArgs());
+                this.EventTargetHub.Dispatch(this, new ClipboardUpdateEventArgs());
             }
             base.WndProc(ref m);
         }

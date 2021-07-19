@@ -88,7 +88,7 @@ namespace AppLogic.Helpers
                     {
                         break;
                     }
-                    await InputHelpers.InputYield(delay: KEYBOARD_POLL_DELAY, token: token);
+                    await InputUtils.InputYield(delay: KEYBOARD_POLL_DELAY, token: token);
                 }
             }
             finally
@@ -148,7 +148,7 @@ namespace AppLogic.Helpers
                                 break;
                             }
                         }
-                        await InputHelpers.InputYield(delay: CHAR_FEED_DELAY, token: token);
+                        await InputUtils.InputYield(delay: CHAR_FEED_DELAY, token: token);
                     }
                     return true;
                 }

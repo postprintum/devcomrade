@@ -6,10 +6,8 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.Principal;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +15,7 @@ using System.Windows.Forms;
 
 namespace AppLogic.Helpers
 {
-    internal static partial class Utilities
+    internal static partial class WinUtils
     {
         /// <summary>
         /// Get top-level window by process name
@@ -26,7 +24,7 @@ namespace AppLogic.Helpers
         {
             var hwndFound = IntPtr.Zero;
 
-            bool enumWindowsProc(IntPtr hwnd, IntPtr lparam)
+            bool EnumWindowsProc(IntPtr hwnd, IntPtr lparam)
             {
                 if (!WinApi.IsWindowVisible(hwnd))
                 {     
@@ -66,7 +64,7 @@ namespace AppLogic.Helpers
                 return true;
             }
 
-            WinApi.EnumDesktopWindows(IntPtr.Zero, enumWindowsProc, IntPtr.Zero);
+            WinApi.EnumDesktopWindows(IntPtr.Zero, EnumWindowsProc, IntPtr.Zero);
             return hwndFound;
         }
 
@@ -75,7 +73,7 @@ namespace AppLogic.Helpers
         /// </summary>
         public static async Task<bool> ActivateProcess(string processName, CancellationToken token)
         {
-            var hwnd = Utilities.FindProcessWindow(processName);
+            var hwnd = WinUtils.FindProcessWindow(processName);
             if (hwnd == IntPtr.Zero)
             {
                 return false;
@@ -93,10 +91,10 @@ namespace AppLogic.Helpers
 
             using (AttachedThreadInputScope.Create())
             {
-                await InputHelpers.TimerYield(token: token);
+                await InputUtils.TimerYield(token: token);
                 WinApi.SetForegroundWindow(hwnd);
                 WinApi.ShowWindow(hwnd, showCmd);
-                await InputHelpers.TimerYield(token: token);
+                await InputUtils.TimerYield(token: token);
             }
             return true;
         }
@@ -127,12 +125,18 @@ namespace AppLogic.Helpers
             return title.ToString();
         }
 
+        /// <summary>
+        /// Enable menu shortcuts underlining
+        /// </summary>
         public static void EnableMenuShortcutsUnderlining()
         {
             int pv = 1;
             WinApi.SystemParametersInfo(WinApi.SPI_SETKEYBOARDCUES, 0, ref pv, 0);
         }
 
+        /// <summary>
+        /// Check if the window is the same as or a child of another window
+        /// </summary>
         public static bool IsDescendant(IntPtr hwndParent, IntPtr hwnd)
         {
             return hwnd != IntPtr.Zero &&
@@ -198,6 +202,22 @@ namespace AppLogic.Helpers
 
             WinApi.EnumDesktopWindows(IntPtr.Zero, enumWindowsProc, IntPtr.Zero);
             return hwndFound;
+        }
+
+        /// <summary>
+        /// Create an Exception object for the last failed Win32 API
+        /// </summary>
+        public static Exception CreateExceptionFromLastWin32Error(int hresult = WinApi.E_FAIL)
+        {
+            var lastError = Marshal.GetLastWin32Error();
+            if (lastError != 0)
+            {
+                return new Win32Exception(lastError);
+            }
+            else
+            {
+                return new COMException(null, hresult);
+            }
         }
     }
 }

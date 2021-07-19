@@ -153,7 +153,7 @@ namespace AppLogic.Presenter
         {
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            using var handlerScope = EventHandlerScope<WebBrowserDocumentCompletedEventHandler>.Create(
+            using var scope = SubscriptionScope<WebBrowserDocumentCompletedEventHandler>.Create(
                 (s, e) => tcs.TrySetResult(DBNull.Value),
                 handler => this.Browser.DocumentCompleted += handler,
                 handler => this.Browser.DocumentCompleted -= handler);

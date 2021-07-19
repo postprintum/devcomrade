@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace AppLogic.Helpers
 {
-    internal static class InputHelpers
+    internal static class InputUtils
     {
         public const int MIN_DELAY = WinApi.USER_TIMER_MINIMUM;
 

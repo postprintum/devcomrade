@@ -8,6 +8,7 @@
 using AppLogic.Helpers;
 using AppLogic.Models;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -16,6 +17,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace AppLogic.Presenter
 {
@@ -43,6 +45,27 @@ namespace AppLogic.Presenter
             }
             return Host.GetClipboardText();
         }
+
+        /// <summary>
+        /// Match a HotkeyHandlerCallback to hotkey.Name 
+        /// </summary>
+        bool IHotkeyHandlerProvider.CanHandle(Hotkey hotkey, [NotNullWhen(true)] out HotkeyHandlerCallback? callback)
+        {
+            // try to match hotkey.Name to a method with [HotkeyHandler] attribute
+            var methodInfo = this.GetType().GetMethod(hotkey.Name,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            if (methodInfo?.GetCustomAttribute(typeof(HotkeyHandlerAttribute), true) != null)
+            {
+                callback = methodInfo.CreateDelegate<HotkeyHandlerCallback>(this);
+                return true;
+            }
+
+            callback = default;
+            return false;
+        }
+
+        #region Hotkey Handlers
 
         /// <summary>
         /// Remove formatting, trailing CR/LFs and paste by simulating typing
@@ -75,9 +98,9 @@ namespace AppLogic.Presenter
         /// Remove formatting, spaces and paste as single line
         /// </summary>
         [HotkeyHandler]
-        public async Task PasteAsSingleLineNoSpaces(Hotkey _, CancellationToken token)
+        public async Task PasteAsNumber(Hotkey _, CancellationToken token)
         {
-            var text = GetClipboardText().RemoveSpaces();
+            var text = GetClipboardText().Where(c => Char.IsDigit(c) || c == '.').AsString();
 
             await Host.FeedTextAsync(text, token);
             Host.PlayNotificationSound();
@@ -157,7 +180,7 @@ namespace AppLogic.Presenter
         [HotkeyHandler]
         public async Task RunWindowsTerminal(Hotkey _, CancellationToken token)
         {
-            if (await Utilities.ActivateProcess("WINDOWSTERMINAL", token))
+            if (await WinUtils.ActivateProcess("WINDOWSTERMINAL", token))
             {
                 return;
             }
@@ -176,12 +199,45 @@ namespace AppLogic.Presenter
         }
 
         /// <summary>
+        /// Run Windows Terminal as Admin
+        /// </summary>
+        [HotkeyHandler]
+        public async Task RunWindowsTerminalAsAdmin(Hotkey _, CancellationToken token)
+        {
+            if (Diagnostics.IsAdmin())
+            {
+                await RunWindowsTerminal(_, token);
+                return;
+            }
+
+            var startInfo = new ProcessStartInfo
+            {
+                UseShellExecute = true,
+                Arguments = $"-d \"{Directory.GetCurrentDirectory()}\"",
+                FileName = "wt.exe",
+                Verb = "runas"
+            };
+            try
+            {
+                using var process = Process.Start(startInfo);
+            }
+            catch (Win32Exception ex)
+            {
+                if (ex.NativeErrorCode != WinApi.ERROR_CANCELLED)
+                {
+                    throw;
+                }
+            }
+            Host.PlayNotificationSound();
+        }
+
+        /// <summary>
         /// Run VS Code at the current folder
         /// </summary>
         [HotkeyHandler]
         public async Task RunVSCode(Hotkey _, CancellationToken token)
         {
-            if (await Utilities.ActivateProcess("CODE", token))
+            if (await WinUtils.ActivateProcess("CODE", token))
             {
                 return;
             }
@@ -204,7 +260,7 @@ namespace AppLogic.Presenter
         [HotkeyHandler]
         public async Task ShowMenu(Hotkey _, CancellationToken token)
         {
-            await Task.CompletedTask;
+            await Task.Yield();
             Host.ShowMenu();
         }
 
@@ -214,7 +270,7 @@ namespace AppLogic.Presenter
         [HotkeyHandler]
         public async Task PresentationSettings(Hotkey _, CancellationToken token)
         {
-            await Task.CompletedTask;
+            await Task.Yield();
             Diagnostics.StartProcess("PresentationSettings.exe");
             Host.PlayNotificationSound();
         }
@@ -228,24 +284,22 @@ namespace AppLogic.Presenter
             await Host.ShowNotepad(null);
         }
 
-
         /// <summary>
-        /// Match a HotkeyHandlerCallback to hotkey.Name 
+        /// Show the internal Notepad
         /// </summary>
-        bool IHotkeyHandlerProvider.CanHandle(Hotkey hotkey, [NotNullWhen(true)] out HotkeyHandlerCallback? callback)
+        [HotkeyHandler]
+        public async Task ConvertToPreformattedHtml(Hotkey _, CancellationToken token)
         {
-            // try to match hotkey.Name to a method with [HotkeyHandler] attribute
-            var methodInfo = this.GetType().GetMethod(hotkey.Name, 
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-            if (methodInfo?.GetCustomAttribute(typeof(HotkeyHandlerAttribute), true) != null)
-            {
-                callback = methodInfo.CreateDelegate<HotkeyHandlerCallback>(this);
-                return true;
-            }
-
-            callback = default;
-            return false;
+            await Task.Yield();
+            var text = Host.GetClipboardText();
+            var dataObject = new DataObject();
+            dataObject.SetData(DataFormats.UnicodeText, text);
+            dataObject.SetData(DataFormats.Html, 
+                ClipboardFormats.ConvertHtmlToClipboardData(text.ToPreformattedHtml()));
+            Host.SetClipboardDataObject(dataObject);
+            Host.PlayNotificationSound();
         }
+
+        #endregion
     }
 }

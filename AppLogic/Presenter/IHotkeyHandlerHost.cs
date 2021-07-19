@@ -21,6 +21,7 @@ namespace AppLogic.Presenter
         string GetClipboardText();
         void ClearClipboard();
         void SetClipboardText(string text);
+        void SetClipboardDataObject(object data);
         Task FeedTextAsync(string text, CancellationToken token);
         void PlayNotificationSound();
         void ShowMenu();

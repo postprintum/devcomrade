@@ -13,39 +13,30 @@ namespace AppLogic.Helpers
     /// <summary>
     /// Disposable
     /// </summary>
-    internal struct Disposable: IDisposable
+    internal struct Disposable : IDisposable
     {
-        private struct EmptyDisposable : IDisposable
+        private readonly Action _dispose;
+
+        private Disposable(Action dispose)
         {
-            public void Dispose()
-            {
-            }
-        }
-
-        public static IDisposable Empty = new EmptyDisposable();
-
-        private readonly Action _finally;
-
-        private Disposable(Action @finally)
-        {
-            _finally = @finally;
+            _dispose = dispose;
         }
 
         void IDisposable.Dispose()
         {
-            _finally();
+            _dispose();
         }
 
-        public static async ValueTask<IDisposable> CreateAsync(Func<Task> func, Action @finally)
+        public static async ValueTask<IDisposable> CreateAsync(Func<Task> func, Action dispose)
         {
             await func();
-            return new Disposable(@finally);
+            return new Disposable(dispose);
         }
 
-        public static IDisposable Create(Action action, Action @finally)
+        public static IDisposable Create(Action action, Action dispose)
         {
             action();
-            return new Disposable(@finally);
+            return new Disposable(dispose);
         }
     }
 }

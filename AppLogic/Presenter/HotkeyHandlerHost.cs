@@ -21,15 +21,19 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using AppLogic.Events;
 
 namespace AppLogic.Presenter
 {
     [System.ComponentModel.DesignerCategory("")]
-    internal partial class HotkeyHandlerHost :
-        Container,
+    internal partial class HotkeyHandlerHost : Form,
         IMessageFilter,
         INotifyPropertyChanged,
-        IHotkeyHandlerHost
+        IHotkeyHandlerHost,
+        IContainer,
+        IEventTargetProp<ClipboardUpdateEventArgs>,
+        IEventTargetProp<ControlClipboardMonitoringEventArgs>,
+        IEventTargetHub
     {
         const int ASYNC_LOCK_TIMEOUT = 250;
         const int CLIPBOARD_MONITORING_DELAY = 100;
@@ -39,11 +43,15 @@ namespace AppLogic.Presenter
 
         private int _menuActive = 0;
 
+        private bool _updatingClipboard = false;
+
         // SemaphoreSlim as an async lock for hotkey handlers to avoid re-rentrancy
         private readonly SemaphoreSlim _asyncLock = new SemaphoreSlim(1);
 
         // when this is signalled, the container's RunAsync exits
         private readonly CancellationTokenSource _cts;
+
+        private readonly Container _componentContainer = new();
 
         // cancellation for RunAsync
         private CancellationToken Token => _cts.Token;
@@ -78,12 +86,35 @@ namespace AppLogic.Presenter
 
         private void OnExitMenu() => _menuActive--;
 
-        private bool IsMenuActive => _menuActive > 0; 
+        private bool IsMenuActive => _menuActive > 0;
+
+        #region Events
+        EventTarget<ClipboardUpdateEventArgs> IEventTargetProp<ClipboardUpdateEventArgs>.Value { get; init; } = new();
+
+        EventTarget<ControlClipboardMonitoringEventArgs> IEventTargetProp<ControlClipboardMonitoringEventArgs>.Value { get; init; } = new();
+        #endregion
 
         private ValueTask<IDisposable> WithLockAsync() =>
             Disposable.CreateAsync(
                 () => _asyncLock.WaitAsync(this.Token),
                 () => _asyncLock.Release());
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public HotkeyHandlerHost(CancellationToken token): base()
+        {
+            this.ShowInTaskbar = false;
+            CreateHandle();
+
+            _cts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            _soundPlayer = new Lazy<SoundPlayer?>(CreateSoundPlayer, isThreadSafe: false);
+            _menu = new Lazy<ContextMenuStrip>(CreateContextMenu, isThreadSafe: false);
+            _notepad = new Lazy<Notepad>(CreateNotepad, isThreadSafe: false);
+            _clipboardFormatMonitor = new Lazy<ClipboardFormatMonitor>(
+                () => new ClipboardFormatMonitor(this), isThreadSafe: false);
+
+            this.Completion = RunAsync();
+        }
 
         // standard hotkey handler providers
         private static IEnumerable<Type> GetHotkeyHandlerProviders()
@@ -92,19 +123,17 @@ namespace AppLogic.Presenter
             yield return typeof(ScriptHotkeyHandlers);
         }
 
-        public HotkeyHandlerHost(CancellationToken token)
+        protected override CreateParams CreateParams
         {
-            _cts = CancellationTokenSource.CreateLinkedTokenSource(token);
-            _soundPlayer = new Lazy<SoundPlayer?>(CreateSoundPlayer, isThreadSafe: false);
-            _menu = new Lazy<ContextMenuStrip>(CreateContextMenu, isThreadSafe: false);
-            _notepad = new Lazy<Notepad>(CreateNotepad, isThreadSafe: false);
-            _clipboardFormatMonitor = new Lazy<ClipboardFormatMonitor>(
-                () => new ClipboardFormatMonitor(), isThreadSafe: false);
-
-            this.Completion = RunAsync();
+            get
+            {
+                var cp = base.CreateParams;
+                cp.Parent = WinApi.GetDesktopWindow();
+                cp.Style = unchecked((int)WinApi.WS_POPUP);
+                cp.ExStyle = unchecked((int)(WinApi.WS_EX_NOACTIVATE | WinApi.WS_EX_TOOLWINDOW));
+                return cp;
+            }
         }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         public void RaisePropertyChange([CallerMemberName] string propertyname = null!)
         {
@@ -132,7 +161,7 @@ namespace AppLogic.Presenter
             }
             else
             {
-                var error = new Win32Exception(Marshal.GetLastWin32Error());
+                var error = WinUtils.CreateExceptionFromLastWin32Error();
                 throw new WarningException($"{hotkeyHandler.Hotkey.Name}: {error.Message}", error);
             }
         }
@@ -157,10 +186,9 @@ namespace AppLogic.Presenter
                 return;
             }
 
-            var updatingClipboard = false;
+            this._clipboardFormatMonitor.Value.StartAsync().IgnoreCancellations();
 
-            _clipboardFormatMonitor.Value.ClipboardUpdate += (s, e) =>
-                HandleOnClipboardTextChangedAsync();
+            this.AddListener<ClipboardUpdateEventArgs>((s, e) => HandleOnClipboardTextChangedAsync());
 
             HandleOnClipboardTextChangedAsync();
 
@@ -186,12 +214,12 @@ namespace AppLogic.Presenter
 
             async Task OnClipboardTextChangedAsync()
             {
-                if (updatingClipboard || this.IsFormattingRemovalPaused)
+                if (_updatingClipboard || this.IsFormattingRemovalPaused)
                 {
                     return;
                 }
 
-                updatingClipboard = true;
+                _updatingClipboard = true;
                 try
                 {
                     await ClipboardAccess.EnsureAsync(
@@ -218,12 +246,12 @@ namespace AppLogic.Presenter
                         }
 
                         Clipboard.SetText(text, TextDataFormat.UnicodeText);
-                        await InputHelpers.InputYield(delay: CLIPBOARD_MONITORING_DELAY, token: this.Token);
+                        await InputUtils.InputYield(delay: CLIPBOARD_MONITORING_DELAY, token: this.Token);
                     }
                 }
                 finally
                 {
-                    updatingClipboard = false;
+                    _updatingClipboard = false;
                 }
             }
         }
@@ -271,6 +299,8 @@ namespace AppLogic.Presenter
             {
                 _notepad.Value.Dispose();
             }
+
+            _componentContainer.Dispose();
 
             base.Dispose(disposing);
         }
@@ -327,7 +357,7 @@ namespace AppLogic.Presenter
             // try to get an instant async lock
             try
             {
-                await InputHelpers.TimerYield(token: this.Token);
+                await InputUtils.TimerYield(token: this.Token);
                 await hotkeyHandler.Callback(hotkeyHandler.Hotkey, this.Token);
             }
             finally
@@ -464,7 +494,7 @@ namespace AppLogic.Presenter
                     string menuItemText;
                     if (hotkey.HasHotkey)
                     {
-                        var hotkeyTitle = Utilities.GetHotkeyTitle(hotkey.Mods!.Value, hotkey.Vkey!.Value);
+                        var hotkeyTitle = WinUtils.GetHotkeyTitle(hotkey.Mods!.Value, hotkey.Vkey!.Value);
                         menuItemText = $"{hotkey.MenuItem}|{hotkeyTitle}";
                     }
                     else
@@ -521,7 +551,6 @@ namespace AppLogic.Presenter
             {
                 yield return ("Restart as Admin", RestartAsAdmin, null);
             }
-            yield return ("Prevent Sleep Mode", Feedback, null);
             yield return GetSeparatorMenuItem();
             yield return ($"About {Application.ProductName}", About, null);
             yield return ("E&xit", Exit, null);
@@ -535,7 +564,7 @@ namespace AppLogic.Presenter
             {
                 async Task handleAsync()
                 {
-                    await InputHelpers.InputYield(token: this.Token);
+                    await InputUtils.InputYield(token: this.Token);
                     handler?.Invoke(s, e);
                 }
                 handleAsync().IgnoreCancellations();
@@ -657,14 +686,32 @@ namespace AppLogic.Presenter
             return Clipboard.GetText(TextDataFormat.UnicodeText);
         }
 
+        private void UpdateClipboard(Action updateAction)
+        {
+            var updatingClipboard = this._updatingClipboard;
+            try
+            {
+                updateAction();
+            }
+            finally
+            {
+                this._updatingClipboard = updatingClipboard;
+            }
+        }
+
         void IHotkeyHandlerHost.ClearClipboard()
         {
-            Clipboard.Clear();
+            UpdateClipboard(() => Clipboard.Clear());
         }
 
         void IHotkeyHandlerHost.SetClipboardText(string text)
         {
-            Clipboard.SetText(text, TextDataFormat.UnicodeText);
+            UpdateClipboard(() => Clipboard.SetText(text, TextDataFormat.UnicodeText));
+        }
+
+        void IHotkeyHandlerHost.SetClipboardDataObject(object data)
+        {
+            UpdateClipboard(() => Clipboard.SetDataObject(data));
         }
 
         async Task IHotkeyHandlerHost.FeedTextAsync(string text, CancellationToken token)
@@ -701,15 +748,16 @@ namespace AppLogic.Presenter
                 OnEnterMenu();
                 try
                 {
-                    var tcs = new TaskCompletionSource<DBNull>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    using var rego = this.Token.Register(() => tcs.TrySetCanceled());
+                    var menuClosedTcs = new TaskCompletionSource<DBNull>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-                    using var scope = EventHandlerScope<ToolStripDropDownClosedEventHandler>.Create(
-                        (s, e) => tcs.TrySetResult(DBNull.Value),
+                    using var rego = this.Token.Register(() => menuClosedTcs.TrySetCanceled());
+
+                    using var menuCloseScope = SubscriptionScope<ToolStripDropDownClosedEventHandler>.Create(
+                        (s, e) => menuClosedTcs.TrySetResult(DBNull.Value),
                         handler => this.Menu.Closed += handler,
                         handler => this.Menu.Closed -= handler);
 
-                    if (!Utilities.TryGetThirdPartyForgroundWindow(out var targetWindow))
+                    if (!WinUtils.TryGetThirdPartyForgroundWindow(out var targetWindow))
                     {
                         // special treatment for our Internal Notepad
                         if (_notepad.IsValueCreated && this._notepad.Value.ContainsFocus)
@@ -718,25 +766,28 @@ namespace AppLogic.Presenter
                         }
                         else
                         {
-                            targetWindow = Utilities.GetPrevActiveWindow();
+                            targetWindow = WinUtils.GetPrevActiveWindow();
                         }
                     }
 
                     using (var attachedInput = AttachedThreadInputScope.Create())
                     {
-                        // set thread focus to the menu window
-                        await InputHelpers.TimerYield(token: this.Token);
-                        WinApi.SetForegroundWindow(this.Menu.Handle);
+                        // steal the focus
+                        WinApi.SetForegroundWindow(this.Handle);
+                        await InputUtils.TimerYield(token: this.Token);
+                    }
 
-                        this.Menu.Show(Cursor.Position);
-                        await tcs.Task;
-
-                        WinApi.SetForegroundWindow(targetWindow);
-
-                        // make sure the mouse cursor has refreshed
+                    try
+                    {
+                        this.Menu.Show(this, Cursor.Position);
+                        await menuClosedTcs.Task;
+                    }
+                    finally
+                    {
+                        // restore the focus
                         Cursor.Hide();
-                        await InputHelpers.TimerYield(token: this.Token);
                         Cursor.Show();
+                        WinApi.SetForegroundWindow(targetWindow);
                     }
                 }
                 finally
@@ -769,6 +820,25 @@ namespace AppLogic.Presenter
             }
         }
 
+        #region IContainer
+        public ComponentCollection Components => _componentContainer.Components;
+
+        public void Add(IComponent? component)
+        {
+            _componentContainer.Add(component);
+        }
+
+        public void Add(IComponent? component, string? name)
+        {
+            _componentContainer.Add(component, name);
+        }
+
+        public void Remove(IComponent? component)
+        {
+            _componentContainer.Remove(component);
+        }
+        #endregion
+
         int IHotkeyHandlerHost.TabSize =>
             Configuration.GetOption("tabSize", 2);
 
@@ -799,16 +869,15 @@ namespace AppLogic.Presenter
                     _formattingRemovalPausedCts?.Cancel();
                     _isFormattingRemovalPaused = value;
 
+                    RaisePropertyChange(nameof(IsFormattingRemovalPaused));
+
                     if (!value)
                     {
-                        RaisePropertyChange();
                         return;
                     }
 
                     _formattingRemovalPausedCts =
                         CancellationTokenSource.CreateLinkedTokenSource(this.Token);
-
-                    RaisePropertyChange();
 
                     await Task.Delay(
                         TimeSpan.FromMinutes(this.PauseFormattingRemovalTimeout), 
@@ -843,7 +912,7 @@ namespace AppLogic.Presenter
                 using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: true);
                 if (regKey == null)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                    throw WinUtils.CreateExceptionFromLastWin32Error();
                 }
                 if (value)
                 {
@@ -858,6 +927,7 @@ namespace AppLogic.Presenter
             }
 
         }
+
         #endregion
     }
 }
