@@ -1,6 +1,6 @@
 # What is it?
 
-`DevComrade` is a free and open-source Windows copy/paste/run productivity improvement tool for developers. 
+`#DevComrade` is a free and open-source Windows copy/paste/run productivity improvement tool for developers. 
 
 # What's new
 
@@ -10,7 +10,7 @@
   - Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close the built-in Notepad and save its content into the Clipboard.
   - Press <kbd>Esc</kbd> to close it without saving.
 - Press <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Ins</kbd> to paste text with all spaces and line-breaks removed (e.g., for pasting a credit card or bank account details). As a reminder, <kbd>Win</kbd>+<kbd>Ins</kbd> pastes with only line-breaks removed.
-- Updated to use .NET 5.0
+- Press <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>Ins</kbd> to wrap the clipboard text with `<pre>` tag for pasting into Microsoft Teams as HTML, [in case nothing else really works](https://twitter.com/search?q=%40MicrosoftTeams%20paste%20formatting&src=typed_query&f=live). 
 
 # Introduction
 
@@ -43,7 +43,7 @@ When it comes to pasting text, `DevComrade` is different from many similar utili
 
 # To try it out from the source code: 
 
-- Download and install [.NET 5.0 SDK](https://download.visualstudio.microsoft.com/download/pr/ced7fd9b-73b9-4756-b9a4-e887281b8c82/7ab0a8e6e8257f1322c6b63a5e01fcb9/dotnet-sdk-5.0.301-win-x64.exe), if you haven't got it installed already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
+- Download and install [.NET 5.0 SDK](https://download.visualstudio.microsoft.com/download/pr/474a078c-f415-4bae-8571-2fe8ea37ed51/a8ac1fe825f63411c375633bd98205c4/dotnet-sdk-5.0.302-win-x64.exe), if you haven't got it installed already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
 
 - Download and unzip [the source](https://github.com/postprintum/devcomrade/archive/main.zip), or use `git` to clone the repo to a folder of your choice, e.g.:
     ```

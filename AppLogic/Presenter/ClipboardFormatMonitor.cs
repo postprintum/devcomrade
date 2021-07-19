@@ -32,7 +32,7 @@ namespace AppLogic.Presenter
             base.CreateHandle(cp);
         }
 
-        public async Task InitAsync()
+        public async Task StartAsync()
         {
             // AddClipboardFormatListener may fail when 
             // another app clipboard operation is in progress

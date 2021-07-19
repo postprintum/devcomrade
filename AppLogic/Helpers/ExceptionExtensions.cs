@@ -18,7 +18,7 @@ namespace AppLogic.Helpers
     /// <summary>
     /// Exception extensions
     /// </summary>
-    public static partial class ExceptionExtensions
+    internal static partial class ExceptionExtensions
     {
         /// <summary>
         /// Unwrap a parent-child chain of single instance AggregateException exceptions

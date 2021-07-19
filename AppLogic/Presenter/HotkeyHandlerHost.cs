@@ -43,6 +43,8 @@ namespace AppLogic.Presenter
 
         private int _menuActive = 0;
 
+        private bool _updatingClipboard = false;
+
         // SemaphoreSlim as an async lock for hotkey handlers to avoid re-rentrancy
         private readonly SemaphoreSlim _asyncLock = new SemaphoreSlim(1);
 
@@ -184,8 +186,7 @@ namespace AppLogic.Presenter
                 return;
             }
 
-            var updatingClipboard = false;
-            this._clipboardFormatMonitor.Value.InitAsync().IgnoreCancellations();
+            this._clipboardFormatMonitor.Value.StartAsync().IgnoreCancellations();
 
             this.AddListener<ClipboardUpdateEventArgs>((s, e) => HandleOnClipboardTextChangedAsync());
 
@@ -213,12 +214,12 @@ namespace AppLogic.Presenter
 
             async Task OnClipboardTextChangedAsync()
             {
-                if (updatingClipboard || this.IsFormattingRemovalPaused)
+                if (_updatingClipboard || this.IsFormattingRemovalPaused)
                 {
                     return;
                 }
 
-                updatingClipboard = true;
+                _updatingClipboard = true;
                 try
                 {
                     await ClipboardAccess.EnsureAsync(
@@ -250,7 +251,7 @@ namespace AppLogic.Presenter
                 }
                 finally
                 {
-                    updatingClipboard = false;
+                    _updatingClipboard = false;
                 }
             }
         }
@@ -685,14 +686,32 @@ namespace AppLogic.Presenter
             return Clipboard.GetText(TextDataFormat.UnicodeText);
         }
 
+        private void UpdateClipboard(Action updateAction)
+        {
+            var updatingClipboard = this._updatingClipboard;
+            try
+            {
+                updateAction();
+            }
+            finally
+            {
+                this._updatingClipboard = updatingClipboard;
+            }
+        }
+
         void IHotkeyHandlerHost.ClearClipboard()
         {
-            Clipboard.Clear();
+            UpdateClipboard(() => Clipboard.Clear());
         }
 
         void IHotkeyHandlerHost.SetClipboardText(string text)
         {
-            Clipboard.SetText(text, TextDataFormat.UnicodeText);
+            UpdateClipboard(() => Clipboard.SetText(text, TextDataFormat.UnicodeText));
+        }
+
+        void IHotkeyHandlerHost.SetClipboardDataObject(object data)
+        {
+            UpdateClipboard(() => Clipboard.SetDataObject(data));
         }
 
         async Task IHotkeyHandlerHost.FeedTextAsync(string text, CancellationToken token)

@@ -207,16 +207,16 @@ namespace AppLogic.Helpers
         /// <summary>
         /// Create an Exception object for the last failed Win32 API
         /// </summary>
-        public static Exception CreateExceptionFromLastWin32Error(string? message = null, int hresult = WinApi.E_FAIL)
+        public static Exception CreateExceptionFromLastWin32Error(int hresult = WinApi.E_FAIL)
         {
             var lastError = Marshal.GetLastWin32Error();
             if (lastError != 0)
             {
-                return new Win32Exception(lastError, message);
+                return new Win32Exception(lastError);
             }
             else
             {
-                return new COMException(message, hresult);
+                return new COMException(null, hresult);
             }
         }
     }

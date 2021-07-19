@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace AppLogic.Presenter
 {
@@ -44,6 +45,27 @@ namespace AppLogic.Presenter
             }
             return Host.GetClipboardText();
         }
+
+        /// <summary>
+        /// Match a HotkeyHandlerCallback to hotkey.Name 
+        /// </summary>
+        bool IHotkeyHandlerProvider.CanHandle(Hotkey hotkey, [NotNullWhen(true)] out HotkeyHandlerCallback? callback)
+        {
+            // try to match hotkey.Name to a method with [HotkeyHandler] attribute
+            var methodInfo = this.GetType().GetMethod(hotkey.Name,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            if (methodInfo?.GetCustomAttribute(typeof(HotkeyHandlerAttribute), true) != null)
+            {
+                callback = methodInfo.CreateDelegate<HotkeyHandlerCallback>(this);
+                return true;
+            }
+
+            callback = default;
+            return false;
+        }
+
+        #region Hotkey Handlers
 
         /// <summary>
         /// Remove formatting, trailing CR/LFs and paste by simulating typing
@@ -248,7 +270,7 @@ namespace AppLogic.Presenter
         [HotkeyHandler]
         public async Task PresentationSettings(Hotkey _, CancellationToken token)
         {
-            await Task.CompletedTask;
+            await Task.Yield();
             Diagnostics.StartProcess("PresentationSettings.exe");
             Host.PlayNotificationSound();
         }
@@ -262,24 +284,22 @@ namespace AppLogic.Presenter
             await Host.ShowNotepad(null);
         }
 
-
         /// <summary>
-        /// Match a HotkeyHandlerCallback to hotkey.Name 
+        /// Show the internal Notepad
         /// </summary>
-        bool IHotkeyHandlerProvider.CanHandle(Hotkey hotkey, [NotNullWhen(true)] out HotkeyHandlerCallback? callback)
+        [HotkeyHandler]
+        public async Task ConvertToPreformattedHtml(Hotkey _, CancellationToken token)
         {
-            // try to match hotkey.Name to a method with [HotkeyHandler] attribute
-            var methodInfo = this.GetType().GetMethod(hotkey.Name, 
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-            if (methodInfo?.GetCustomAttribute(typeof(HotkeyHandlerAttribute), true) != null)
-            {
-                callback = methodInfo.CreateDelegate<HotkeyHandlerCallback>(this);
-                return true;
-            }
-
-            callback = default;
-            return false;
+            await Task.Yield();
+            var text = Host.GetClipboardText();
+            var dataObject = new DataObject();
+            dataObject.SetData(DataFormats.UnicodeText, text);
+            dataObject.SetData(DataFormats.Html, 
+                ClipboardFormats.ConvertHtmlToClipboardData(text.ToPreformattedHtml()));
+            Host.SetClipboardDataObject(dataObject);
+            Host.PlayNotificationSound();
         }
+
+        #endregion
     }
 }

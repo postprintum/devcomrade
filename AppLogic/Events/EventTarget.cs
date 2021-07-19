@@ -20,6 +20,7 @@ namespace AppLogic.Events
     {
         public event EventHandler<T>? Event;
 
-        public void Dispatch(object? source, T eventArgs) => this.Event?.Invoke(source, eventArgs);
+        public void Dispatch(object? source, T eventArgs) => 
+            this.Event?.Invoke(source, eventArgs);
     }
 }

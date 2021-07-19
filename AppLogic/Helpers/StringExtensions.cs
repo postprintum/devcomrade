@@ -97,7 +97,24 @@ namespace AppLogic.Helpers
             return String.Join('\n', lines.Select(l => removalRegex.Replace(l, String.Empty)));
         }
 
-        public static string ConvertToHtmlPre(this string @this)
+
+        /*
+        StartHTML:0000000000
+        EndHTML:0000000000
+        StartFragment:0000000000
+        EndFragment:0000000000
+        <!DOCTYPE>
+        <HTML>
+        <HEAD>
+        <TITLE> The HTML Clipboard</TITLE>
+        </HEAD>
+        <BODY>
+        <!--StartFragment --><!--EndFragment -->
+        </BODY>
+        </HTML>        
+        */
+
+        public static string ToPreformattedHtml(this string @this)
         {
             return $@"<pre>{HtmlEncoder.Default.Encode(@this)}</pre>";
         }
