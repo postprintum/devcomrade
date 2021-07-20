@@ -293,7 +293,6 @@ namespace AppLogic.Presenter
             await Task.Yield();
             var text = Host.GetClipboardText();
             var dataObject = new DataObject();
-            dataObject.SetData(DataFormats.UnicodeText, text);
             dataObject.SetData(DataFormats.Html, 
                 ClipboardFormats.ConvertHtmlToClipboardData(text.ToPreformattedHtml()));
             Host.SetClipboardDataObject(dataObject);

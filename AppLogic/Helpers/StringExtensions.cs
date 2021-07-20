@@ -97,26 +97,12 @@ namespace AppLogic.Helpers
             return String.Join('\n', lines.Select(l => removalRegex.Replace(l, String.Empty)));
         }
 
-
-        /*
-        StartHTML:0000000000
-        EndHTML:0000000000
-        StartFragment:0000000000
-        EndFragment:0000000000
-        <!DOCTYPE>
-        <HTML>
-        <HEAD>
-        <TITLE> The HTML Clipboard</TITLE>
-        </HEAD>
-        <BODY>
-        <!--StartFragment --><!--EndFragment -->
-        </BODY>
-        </HTML>        
-        */
-
         public static string ToPreformattedHtml(this string @this)
         {
-            return $@"<pre>{HtmlEncoder.Default.Encode(@this)}</pre>";
+            return
+                "<pre style=\"display: block; margin: 0; padding: 0; font-family: ui-monospace; " +
+                "white-space: pre; line-height: normal; font-style: normal; font-size: 100%; " + 
+                $"font-weight: normal; text-transform: none\">{HtmlEncoder.Default.Encode(@this)}\n</pre>";
         }
     }
 }

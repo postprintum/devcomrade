@@ -10,23 +10,23 @@ namespace AppLogic.Helpers
     internal static class ClipboardFormats
     {
         static readonly string HEADER = 
-            "Version:0.9:\n" +
-            "StartHTML:{0:00000}\n" +
-            "EndHTML:{1:00000}\n" +
-            "StartFragment:{2:00000}\n" +
-            "EndFragment:{3:00000}\n";
+            "Version:0.9\r\n" +
+            "StartHTML:{0:0000000000}\r\n" +
+            "EndHTML:{1:0000000000}\r\n" +
+            "StartFragment:{2:0000000000}\r\n" +
+            "EndFragment:{3:0000000000}\r\n";
 
         static readonly string HTML_START =
-            "<html>\n" +
-            "<body>\n" +
-            "<!–StartFragment–>";
+            "<html>\r\n" +
+            "<body>\r\n" +
+            "<!--StartFragment-->";
 
         static readonly string HTML_END =
-            "<!–EndFragment–>\n" +
-            "</body>\n" +
-            "</html>\n";
+            "<!--EndFragment-->\r\n" +
+            "</body>\r\n" +
+            "</html>";
 
-        public static byte[] ConvertHtmlToClipboardData(string html)
+        public static string ConvertHtmlToClipboardData(string html)
         {
             var encoding = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
             var data = Array.Empty<byte>();
@@ -45,7 +45,6 @@ namespace AppLogic.Helpers
 
             var endHtml = data.Length;
 
-            // patch the header
             var newHeader = encoding.GetBytes(
                 String.Format(HEADER, startHtml, startFragment, endFragment, endHtml));
             if (newHeader.Length != startHtml)
@@ -53,8 +52,8 @@ namespace AppLogic.Helpers
                 throw new InvalidOperationException(nameof(ConvertHtmlToClipboardData));
             }
 
-            Array.Copy(header, data, length: startHtml);
-            return data;
+            Array.Copy(newHeader, data, length: startHtml);
+            return encoding.GetString(data);
         } 
     }
 }
