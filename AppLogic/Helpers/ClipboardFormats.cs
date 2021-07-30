@@ -14,24 +14,30 @@ namespace AppLogic.Helpers
             "StartHTML:{0:0000000000}\r\n" +
             "EndHTML:{1:0000000000}\r\n" +
             "StartFragment:{2:0000000000}\r\n" +
-            "EndFragment:{3:0000000000}\r\n";
+            "EndFragment:{3:0000000000}\r\n" +
+            "StartSelection:{4:0000000000}\r\n" +
+            "EndSelection:{5:0000000000}\r\n";
 
         static readonly string HTML_START =
-            "<html>\r\n" +
-            "<body>\r\n" +
+            "<!DOCTYPE html>\r\n" +
+            "<HTML>\r\n" +
+            "<HEAD>\r\n" +
+            "<TITLE></TITLE>\r\n" +
+            "<BODY>\r\n" +
             "<!--StartFragment-->";
 
         static readonly string HTML_END =
             "<!--EndFragment-->\r\n" +
-            "</body>\r\n" +
-            "</html>";
+            "</BODY>\r\n" +
+            "</HEAD>\r\n" +
+            "</HTML>";
 
         public static string ConvertHtmlToClipboardData(string html)
         {
             var encoding = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
             var data = Array.Empty<byte>();
 
-            var header = encoding.GetBytes(String.Format(HEADER, 0, 1, 2, 3));
+            var header = encoding.GetBytes(String.Format(HEADER, 0, 1, 2, 3, 4, 5));
             data = data.Concat(header).ToArray();
 
             var startHtml = data.Length;
@@ -46,13 +52,18 @@ namespace AppLogic.Helpers
             var endHtml = data.Length;
 
             var newHeader = encoding.GetBytes(
-                String.Format(HEADER, startHtml, startFragment, endFragment, endHtml));
+                String.Format(HEADER, 
+                startHtml, endHtml, 
+                startFragment, endFragment, 
+                startFragment, endFragment));
+
             if (newHeader.Length != startHtml)
             {
                 throw new InvalidOperationException(nameof(ConvertHtmlToClipboardData));
             }
 
             Array.Copy(newHeader, data, length: startHtml);
+
             return encoding.GetString(data);
         } 
     }

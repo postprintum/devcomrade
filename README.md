@@ -4,13 +4,17 @@
 
 # What's new
 
-- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain, unformatted text system-wide. Or, if your currently open application has any other default keyboard shortcut / menu item for pasting, that should work, too. By default, `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text on-the-fly (via [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This behavior can be controlled by <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
+- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain, unformatted text system-wide. 
+  
+  Or, if your currently open application has any other default keyboard shortcut / menu item for pasting, that should work, too. By default, `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text on-the-fly (via [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This behavior can be controlled by <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
 - The new buit-in Clipboard Notepad:
   - Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to edit the Clipboard text with DevComrade's built-in Notepad.
   - Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close the built-in Notepad and save its content into the Clipboard.
   - Press <kbd>Esc</kbd> to close it without saving.
-- Press <kbd>Win</kbd>+<kbd>Shift</kbd>+<kbd>Ins</kbd> to paste text with all spaces and line-breaks removed (e.g., for pasting a credit card or bank account details). As a reminder, <kbd>Win</kbd>+<kbd>Ins</kbd> pastes with only line-breaks removed.
-- Press <kbd>Win</kbd>+<kbd>Ctrl</kbd>+<kbd>Ins</kbd> to wrap the clipboard text with `<pre>` tag for pasting into Microsoft Teams as HTML, [in case nothing else really works](https://twitter.com/search?q=%40MicrosoftTeams%20paste%20formatting&src=typed_query&f=live). 
+- <kbd>Win</kbd>+<kbd>Ins</kbd> to paste as unformatted text with line-breaks removed.
+- <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Ins</kbd> to paste as unformatted text mult-line text.
+- <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Ins</kbd> to paste only a number (e.g., a credit card or bank account details). 
+- <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Ins</kbd> to wrap the clipboard text with `<pre>` tag for pasting into Microsoft Teams as HTML, [in case nothing else really works](https://twitter.com/search?q=%40MicrosoftTeams%20paste%20formatting&src=typed_query&f=live). 
 
 # Introduction
 
@@ -18,11 +22,15 @@ Copy-pasting from the online docs, StackOverflow or numerous blogs can be a tedi
 
 Or, have you ever been annoyed with some broken formatting, indentation, inconsistent tabs/spaces when you paste a piece of code into Visual Studio Code editor, a blog post or an email message? A typical workaround for that is to use the good old `Notepad.exe` as a buffer.
 
-Now I have two dedicated hotkeys for that, **<kbd>Win</kbd>+<kbd>Ins</kbd> (paste as single line) and <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Ins</kbd> (paste as multiple lines)**, which uniformly work across all apps and browsers. It also removes the trailing empty lines and the last line's CR/LF ending, so nothing gets automatically executed.
+Now I have two dedicated hotkeys for that, **<kbd>Win</kbd>+<kbd>Ins</kbd> (paste as single line) and <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Ins</kbd> (paste as multiple lines)**, which uniformly work across all apps and browsers. It also removes the trailing empty lines and the last line's CR/LF ending, so nothing gets automatically executed.
+
+# Launch other applications with a custom hotkey
 
 One other source of disappointment for me has always been how custom keyboard hotkeys work with Windows Shell shortcuts. It is a common struggle to find a convenient hotkey combination that still can be assigned to start a custom app. E.g., it is impossible to use <kbd>Win</kbd>+<kbd>Shift|Alt|Ctrl</kbd>+<kbd>Key</kbd> combos for that. And when it *can* be assigned, [it may take up to 10 seconds](https://superuser.com/q/426947/246232) for the program to actually start when the hotkey is pressed.
 
 `DevComrade` has been made to solve this problem, too. It allows assigning a customizable action to (almost) any hotkey combination, and comes with an extensive set of predefined actions for pasting text and launching apps. 
+
+# Custom actions and scriptlets
 
 Additional actions can be added as [C# scriptlets](https://github.com/dotnet/roslyn/blob/master/docs/wiki/Scripting-API-Samples.md) in the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config). E.g., generating a GUID:
 
@@ -34,14 +42,17 @@ Additional actions can be added as [C# scriptlets](https://github.com/dotnet/ros
     ]]>
 </hotkey>
 ```
+# How does it work?
 
 When it comes to pasting text, `DevComrade` is different from many similar utilities (e.g., from the still-excellent [Puretext](https://stevemiller.net/puretext/)) in how it uses [Win32 simulated input API](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput) to elaborately feed the text into the currently active window, character by character as though it was typed by a person. For example, it works well with Google's [Secure Shell App Chrome extension](https://chrome.google.com/webstore/detail/secure-shell-app/pnhechapfaindjhompbnflcldabbghjo?hl=en).
+
+# Work in progress
 
 `DevComrade` is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0) and uses Windows Forms for its very simple, context-menu-style UI. 
 
 **It is still very much a work in progress**. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will be implemented soon and this page will be updated. Meanwhile, to build and run from the source:
 
-# To try it out from the source code: 
+# Try it out from the source code (it's super easy): 
 
 - Download and install [.NET 5.0 SDK](https://download.visualstudio.microsoft.com/download/pr/474a078c-f415-4bae-8571-2fe8ea37ed51/a8ac1fe825f63411c375633bd98205c4/dotnet-sdk-5.0.302-win-x64.exe), if you haven't got it installed already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
 
