@@ -6,15 +6,15 @@
 
 - Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain, unformatted text system-wide. 
   
-  Or, if your currently open application has any other default keyboard shortcut / menu item for pasting, that should work, too. By default, `DevComrade` now monitors Windows Clipboard for text with rich formatting and replaces it with plain text on-the-fly (via [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents)). This behavior can be controlled by <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
+  Or, if the application with the keyboard focus uses other hotkeys / menu items for pasting, they should just work, too. By default, `DevComrade` now monitors Windows Clipboard for text with rich formattin and seamlessly replaces it with plain text, ready to be pasted. To achieve this, DevComrade uses [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents). This behavior can be controlled by <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
 - The new buit-in Clipboard Notepad:
-  - Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to edit the Clipboard text with DevComrade's built-in Notepad.
+  - Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to edit the clipboard text with DevComrade's built-in Notepad.
   - Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close the built-in Notepad and save its content into the Clipboard.
   - Press <kbd>Esc</kbd> to close it without saving.
-- <kbd>Win</kbd>+<kbd>Ins</kbd> to paste as unformatted text with line-breaks removed.
-- <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Ins</kbd> to paste as unformatted text mult-line text.
-- <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Ins</kbd> to paste only a number (e.g., a credit card or bank account details). 
-- <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Ins</kbd> to wrap the clipboard text with `<pre>` tag for pasting into Microsoft Teams as HTML, [in case nothing else really works](https://twitter.com/search?q=%40MicrosoftTeams%20paste%20formatting&src=typed_query&f=live). 
+- <kbd>Win</kbd>+<kbd>Ins</kbd> to paste as unformatted single-line text (with line breaks removed, for pasting into CLI).
+- <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Ins</kbd> to paste as unformatted multi-line text.
+- <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>Ins</kbd> to paste only a number (e.g., a credit card or bank account number). 
+- <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>Ins</kbd> to wrap the clipboard text with `<pre>` tag, e.g. for pasting code into Microsoft Teams' chat as HTML ([sometimes nothing else really works](https://twitter.com/search?q=%40MicrosoftTeams%20paste%20formatting&f=live)). 
 
 # Introduction
 
@@ -50,7 +50,7 @@ When it comes to pasting text, `DevComrade` is different from many similar utili
 
 `DevComrade` is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0) and uses Windows Forms for its very simple, context-menu-style UI. 
 
-**It is still very much a work in progress**. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will be implemented soon and this page will be updated. Meanwhile, to build and run from the source:
+I consider it stable, **but it is still very much work in progress**. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will eventually be implemented. Meanwhile, feel free to build and run it directly from the source code. DevComrade does not collect any kind of telemetry and will never be.
 
 # Try it out from the source code (it's super easy): 
 
