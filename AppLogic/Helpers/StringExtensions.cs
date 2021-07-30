@@ -102,7 +102,7 @@ namespace AppLogic.Helpers
             return
                 "<pre style=\"display: block; margin: 0; padding: 0; font-family: ui-monospace; " +
                 "white-space: pre; line-height: normal; font-style: normal; font-size: 100%; " + 
-                $"font-weight: normal; text-transform: none\">{HtmlEncoder.Default.Encode(@this)}\n</pre>";
+                $"font-weight: normal; text-transform: none\">{HtmlEncoder.Default.Encode(@this)}\r\n</pre>";
         }
     }
 }

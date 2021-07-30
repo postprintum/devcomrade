@@ -235,18 +235,20 @@ namespace AppLogic.Presenter
                     if (Clipboard.ContainsText(TextDataFormat.Html) ||
                         Clipboard.ContainsText(TextDataFormat.Rtf))
                     {
-                        var text = default(string);
+                        var text = String.Empty;
                         if (Clipboard.ContainsText(TextDataFormat.UnicodeText))
                         {
                             text = Clipboard.GetText(TextDataFormat.UnicodeText);
                         }
                         if (text.IsNullOrEmpty())
                         {
-                            text = Clipboard.GetText(TextDataFormat.Text) ?? String.Empty;
+                            text = Clipboard.GetText(TextDataFormat.Text);
                         }
-
-                        Clipboard.SetText(text, TextDataFormat.UnicodeText);
-                        await InputUtils.InputYield(delay: CLIPBOARD_MONITORING_DELAY, token: this.Token);
+                        if (!text.IsNullOrEmpty())
+                        {
+                            Clipboard.SetText(text, TextDataFormat.UnicodeText);
+                            await InputUtils.InputYield(delay: CLIPBOARD_MONITORING_DELAY, token: this.Token);
+                        }
                     }
                 }
                 finally
