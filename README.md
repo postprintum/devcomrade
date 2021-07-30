@@ -50,7 +50,7 @@ When it comes to pasting text, `DevComrade` is different from many similar utili
 
 `DevComrade` is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0) and uses Windows Forms for its very simple, context-menu-style UI. 
 
-I consider it stable, **but it is still very much work in progress**. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will eventually be implemented. Meanwhile, feel free to build and run it directly from the source code. DevComrade does not collect any kind of telemetry and will never be.
+I consider it stable, **but it is still very much work in progress**. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will eventually be implemented. Meanwhile, feel free to build and run it directly from the source code. DevComrade does not collect any kind of telemetry, and it never will.
 
 # Try it out from the source code (it's super easy): 
 
