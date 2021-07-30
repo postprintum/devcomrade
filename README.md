@@ -6,7 +6,7 @@
 
 - Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain, unformatted text system-wide, by default. 
   
-  Or, if the application with the keyboard focus uses other hotkeys / menu items for pasting, those should just work, too. By default, `DevComrade` now monitors Windows Clipboard for text with rich formattin and seamlessly replaces it with plain text, ready to be pasted. To achieve this, DevComrade uses [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents). This behavior can be controlled by <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
+  Or, if the application with the keyboard focus uses other hotkeys / menu items for pasting, those should just work, too. By default, `DevComrade` now monitors Windows Clipboard for text with rich formattin and seamlessly replaces it with plain text, ready to be pasted. To achieve this, `DevComrade` uses [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents). This behavior can be controlled by <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
 - The new buit-in Clipboard Notepad:
   - Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to edit the clipboard text with DevComrade's built-in Notepad.
   - Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close the built-in Notepad and save its content into the Clipboard.
@@ -74,9 +74,9 @@ I consider it stable, **but it is still very much work in progress**. Some CI lo
 Once run, `DevComrade` shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" height="16"/> icon in the system tray. Some of the features to try out:
 
 - Press <kbd>Win</kbd>+<kbd>F10</kbd> to see the list of the available shortcuts and actions.
-- Copy some code into the Clipboard and try <kbd>Alt</kbd>+<kbd>Ins</kbd>, to see it pasted into the instant internal Notepad pop-up window. Press <kbd>Esc</kbd> to simply hide it when finished, or <kbd>Win</kbd>+<kbd>&#x5c;</kbd> to open it again. 
-- Press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>E</kbd> to open Windows Terminal then <kbd>Win</kbd>+<kbd>Ins</kbd> to paste the Clipboard's content as a single line of text. It won't get executed until your press <kbd>Enter</kbd>.
-- Copy any URL into clipboard (e.g., from a console window output, spaces and broken lines are OK), then press <kbd>Shift</kbd>+<kbd>Win</kbd>+<kbd>O</kbd> to open it in your default web browser.
+- Copy some code into the Clipboard and try <kbd>Alt</kbd>+<kbd>Ins</kbd>, to see it pasted into the instant internal Notepad pop-up window. Press <kbd>Esc</kbd> to simply hide it when finished, or <kbd>Win</kbd>+<kbd>Win</kbd>+<kbd>N</kbd> to open it again. 
+- Press <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd> to open Windows Terminal then <kbd>Win</kbd>+<kbd>Ins</kbd> to paste the Clipboard's content as a single line of text. It won't get executed until your press <kbd>Enter</kbd>.
+- Copy any URL into clipboard (e.g., from a console window output, spaces and broken lines are OK), then press <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>O</kbd> to open it in your default web browser.
 
 This tool has been working well for my own personal needs, but outside that its future depends on your feedback. Feel free to [open an issue](https://github.com/postprintum/devcomrade/issues) or [send me a DM on Twitter](https://twitter.com/noseratio).
 
