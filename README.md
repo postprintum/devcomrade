@@ -54,7 +54,7 @@ I consider it stable, **but it is still very much work in progress**. Some CI lo
 
 # Try it out from the source code (it's super easy): 
 
-- Download and install [.NET 5.0 SDK](https://download.visualstudio.microsoft.com/download/pr/474a078c-f415-4bae-8571-2fe8ea37ed51/a8ac1fe825f63411c375633bd98205c4/dotnet-sdk-5.0.302-win-x64.exe), if you haven't got it installed already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
+- Download and install [.NET 5.0 SDK](https://download.visualstudio.microsoft.com/download/pr/c1bfbb13-ad09-459c-99aa-8971582af86e/61553270dd9348d7ba29bacfbb4da7bd/dotnet-sdk-5.0.400-win-x64.exe), if you haven't got it installed already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
 
 - Download and unzip [the source](https://github.com/postprintum/devcomrade/archive/main.zip), or use `git` to clone the repo to a folder of your choice, e.g.:
     ```
