@@ -6,7 +6,7 @@
 
 - Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain, formatting-stripped text into any Windows application, system-wide. 
   
-  By default, `DevComrade` now monitors Windows Clipboard for text with rich formatting (HTML, PDF, Word, etc.) and seamlessly replaces it with plain text, ready to be pasted. To achieve this, `DevComrade` uses [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents). This behavior can be switched on/off with <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
+  By default, `DevComrade` now monitors Windows Clipboard for text with rich formatting (coming from HTML, RTF, PDF, Word documents etc.) and seamlessly replaces it with plain text, ready to be pasted anywhere. To achieve this, `DevComrade` uses [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents). This behavior can be switched on/off with <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
 - The new built-in Clipboard Notepad:
   - Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to edit the clipboard text with DevComrade's built-in Notepad.
   - Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close the built-in Notepad and save its content into the Clipboard.
@@ -44,13 +44,13 @@ Additional actions can be added as [C# scriptlets](https://github.com/dotnet/ros
 ```
 # How does it work?
 
-When it comes to pasting text, `DevComrade` is different from many similar utilities (e.g., from the still-excellent [Puretext](https://stevemiller.net/puretext/)) in how it uses [Win32 simulated input API](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput) to elaborately feed the text into the currently active window, character by character as though it was typed by a person. For example, it works well with Google's [Secure Shell App Chrome extension](https://chrome.google.com/webstore/detail/secure-shell-app/pnhechapfaindjhompbnflcldabbghjo?hl=en).
+When it comes to pasting text, `DevComrade` is different from many similar utilities (e.g., from the still-excellent [Puretext](https://stevemiller.net/puretext/)) in how it uses [Win32 simulated input API](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput) to elaborately feed the text into the currently active window, character by character, as though it was typed by a person. For example, it works well with Google's [Secure Shell Chrome extension](https://chrome.google.com/webstore/detail/secure-shell/iodihamcpbpeioajjeobimgagajmlibd?hl=en).
 
 # Work in progress
 
-`DevComrade` is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) and uses Windows Forms for its very simple, context-menu-style UI. 
+`DevComrade` is a free and open-source software maintained under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) and uses Windows Forms for its very simple context menu UI. 
 
-I consider it stable, **but it is still very much work in progress**. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will eventually be implemented. Meanwhile, feel free to build and run it directly from the source code. DevComrade does not collect any kind of telemetry, and it never will.
+I consider it stable, **but it is still very much work in progress**. Eventually, some CI logic for publishing a Chocolatey package (including a code-signed executable) will be implemented. Meanwhile, feel free to build and run it directly from the source code. DevComrade does not collect any kind of telemetry, and never will.
 
 # Try it out from the source code (it's super easy): 
 
