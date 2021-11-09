@@ -4,10 +4,10 @@
 
 # What's new
 
-- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain, unformatted text system-wide, by default. 
+- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain, formatting-stripped text into any Windows application, system-wide. 
   
-  Or, if the application with the current keyboard focus uses other hotkeys / menu items for pasting, those should just work, too. By default, `DevComrade` now monitors Windows Clipboard for text with rich formattin and seamlessly replaces it with plain text, ready to be pasted. To achieve this, `DevComrade` uses [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents). This behavior can be controlled by <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
-- The new buit-in Clipboard Notepad:
+  By default, `DevComrade` now monitors Windows Clipboard for text with rich formatting (HTML, PDF, Word, etc.) and seamlessly replaces it with plain text, ready to be pasted. To achieve this, `DevComrade` uses [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents). This behavior can be switched on/off with <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
+- The new built-in Clipboard Notepad:
   - Press <kbd>Alt</kbd>+<kbd>Ins</kbd> to edit the clipboard text with DevComrade's built-in Notepad.
   - Press <kbd>Control</kbd>+<kbd>Enter</kbd> to close the built-in Notepad and save its content into the Clipboard.
   - Press <kbd>Esc</kbd> to close it without saving.
@@ -48,13 +48,14 @@ When it comes to pasting text, `DevComrade` is different from many similar utili
 
 # Work in progress
 
-`DevComrade` is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0) and uses Windows Forms for its very simple, context-menu-style UI. 
+`DevComrade` is a free and open-source software licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). It's built with [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) and uses Windows Forms for its very simple, context-menu-style UI. 
 
 I consider it stable, **but it is still very much work in progress**. Some CI logic for publishing a Chocolatey package (including a code-signed executable) will eventually be implemented. Meanwhile, feel free to build and run it directly from the source code. DevComrade does not collect any kind of telemetry, and it never will.
 
 # Try it out from the source code (it's super easy): 
 
-- Download and install [.NET 5.0 SDK](https://download.visualstudio.microsoft.com/download/pr/c1bfbb13-ad09-459c-99aa-8971582af86e/61553270dd9348d7ba29bacfbb4da7bd/dotnet-sdk-5.0.400-win-x64.exe), if you haven't got it installed already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
+- Download and install [.NET 6.0 SDK](https://download.visualstudio.microsoft.com/download/pr/0f71eaf1-ce85-480b-8e11-c3e2725b763a/9044bfd1c453e2215b6f9a0c224d20fe/dotnet-sdk-6.0.100-win-x64.exe
+), if you haven't got it installed already. That's the only needed prerequisite tool. Visual Studio or Visual Studio Code aren't required to build this app.
 
 - Download and unzip [the source](https://github.com/postprintum/devcomrade/archive/main.zip), or use `git` to clone the repo to a folder of your choice, e.g.:
     ```
@@ -67,11 +68,11 @@ I consider it stable, **but it is still very much work in progress**. Some CI lo
     ```
 - Or do that manually:
     ```
-    dotnet publish -r win10-x64 -c Release --self-contained false -p:PublishTrimmed=false .\DevComrade
+    dotnet publish -r win10-x64 -c Release --self-contained .\DevComrade
     
-    start .\DevComrade\bin\Release\net5.0-windows7\win10-x64\DevComrade.exe 
+    start .\DevComrade\bin\Release\net6.0-windows\win10-x64\DevComrade.exe 
     ```
-Once run, `DevComrade` shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" height="16"/> icon in the system tray. Some of the features to try out:
+Once started, `DevComrade` shows up as <img src="./Art/BulbIcon.ico" alt="DevComrade Icon" height="16"/> icon in the system tray. Some of the features to try out:
 
 - Press <kbd>Win</kbd>+<kbd>F10</kbd> to see the list of the available shortcuts and actions.
 - Copy some code into the Clipboard and try <kbd>Alt</kbd>+<kbd>Ins</kbd>, to see it pasted into the instant internal Notepad pop-up window. Press <kbd>Esc</kbd> to simply hide it when finished, or <kbd>Win</kbd>+<kbd>Win</kbd>+<kbd>N</kbd> to open it again. 
@@ -87,24 +88,3 @@ This tool has been working well for my own personal needs, but outside that its 
 <hr>
 
 <img src="./Art/notepad.jpg" alt="DevComrade Alt+Ins Notepad" width="800"/>
-
-<!---
-# Getting Started
-TODO: See above, Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
-
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
-
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
-
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
-
---> 
