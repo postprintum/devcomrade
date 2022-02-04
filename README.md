@@ -4,7 +4,7 @@
 
 # What's new
 
-- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain, formatting-stripped text into any Windows application, system-wide. Or any aother common paste shortcut (<kbd>Shift</kbd>+<kbd>Ins</kbd>, right click/Paste, etc).
+- Simply use <kbd>Ctrl</kbd>+<kbd>V</kbd> for pasting plain, formatting-stripped text into any Windows application, system-wide. Or any other common shortcut for pasting from the Clipboard (like <kbd>Shift</kbd>+<kbd>Ins</kbd>, right click/Paste, etc).
   
   By default, `DevComrade` now monitors Windows Clipboard for text with rich formatting (coming from HTML, RTF, PDF, Word documents etc.) and seamlessly replaces it with plain text, ready to be pasted anywhere. To achieve this, `DevComrade` uses [Win32 Clipboard Monitoring API](https://docs.microsoft.com/en-us/windows/win32/dataxchg/using-the-clipboard#monitoring-clipboard-contents). This behavior can be switched on/off with <kbd>Win</kbd>+<kbd>F10</kbd> menu or via the [`.config` file](https://github.com/postprintum/devcomrade/blob/main/DevComrade/App.config).
 - The new built-in Clipboard Notepad:
