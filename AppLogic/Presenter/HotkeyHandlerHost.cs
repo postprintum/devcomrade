@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2020 by Postprintum Pty Ltd (https://www.postprintum.com),
+﻿// Copyright (C) 2020-2026 by Postprintum Pty Ltd (https://www.postprintum.com),
 // which licenses this file to you under Apache License 2.0,
 // see the LICENSE file in the project root for more information. 
 // Author: Andrew Nosenko (@noseratio)
@@ -56,7 +56,8 @@ namespace AppLogic.Presenter
         // cancellation for RunAsync
         private CancellationToken Token => _cts.Token;
 
-        private ContextMenuStrip Menu => _menu.Value;
+        // NB: named MainMenu rather than Menu, so it doesn't hide Form.Menu
+        private ContextMenuStrip MainMenu => _menu.Value;
 
         private Notepad Notepad => _notepad.Value;
 
@@ -66,9 +67,9 @@ namespace AppLogic.Presenter
         // for playing sound notifictions
         private readonly Lazy<SoundPlayer?> _soundPlayer;
 
-        // map hotkey Name to handler
-        private readonly Dictionary<string, HotkeyHandler> _handlersByHotkeyNameMap =
-            new Dictionary<string, HotkeyHandler>();
+        // all configured handlers, in config order. A name can appear more than
+        // once here, when an action has more than one key combination
+        private readonly List<HotkeyHandler> _handlers = new List<HotkeyHandler>();
 
         // map hotkey ID to handler
         private readonly Dictionary<int, HotkeyHandler> _handlersByHotkeyIdMap =
@@ -120,7 +121,6 @@ namespace AppLogic.Presenter
         private static IEnumerable<Type> GetHotkeyHandlerProviders()
         {
             yield return typeof(PredefinedHotkeyHandlers);
-            yield return typeof(ScriptHotkeyHandlers);
         }
 
         protected override CreateParams CreateParams
@@ -179,18 +179,32 @@ namespace AppLogic.Presenter
             Directory.SetCurrentDirectory(folder);
         }
 
+        private void StartClipboardFormatMonitoring()
+        {
+            _clipboardFormatMonitor.Value.StartAsync().IgnoreCancellations();
+
+            // process whatever is already in the clipboard
+            this.Dispatch(this, new ClipboardUpdateEventArgs());
+        }
+
+        private void StopClipboardFormatMonitoring()
+        {
+            if (_clipboardFormatMonitor.IsValueCreated)
+            {
+                _clipboardFormatMonitor.Value.Stop();
+            }
+        }
+
         private void InitializeClipboardFormatMonitoring()
         {
-            if (!this.IsFormattingRemovalEnabled)
-            {
-                return;
-            }
-
-            this._clipboardFormatMonitor.Value.StartAsync().IgnoreCancellations();
-
+            // the listener stays subscribed for the lifetime of the app;
+            // it's the monitor itself which gets hooked and unhooked on demand
             this.AddListener<ClipboardUpdateEventArgs>((s, e) => HandleOnClipboardTextChangedAsync());
 
-            HandleOnClipboardTextChangedAsync();
+            if (this.IsFormattingRemovalEnabled)
+            {
+                StartClipboardFormatMonitoring();
+            }
 
             async void HandleOnClipboardTextChangedAsync()
             {
@@ -214,7 +228,10 @@ namespace AppLogic.Presenter
 
             async Task OnClipboardTextChangedAsync()
             {
-                if (_updatingClipboard || this.IsFormattingRemovalPaused)
+                // the enabled check also covers the race when the toggle is
+                // switched off while ClipboardFormatMonitor.StartAsync is still
+                // retrying and attaches the listener afterwards
+                if (_updatingClipboard || !this.IsFormattingRemovalEnabled)
                 {
                     return;
                 }
@@ -261,7 +278,7 @@ namespace AppLogic.Presenter
         private void InitializeHotkeys()
         {
             // Roaming config gets precedence over Local
-            var hotkeys = Configuration.RoamingHotkeys.Union(Configuration.LocalHotkeys).ToArray();
+            var hotkeys = Configuration.GetHotkeys();
 
             // instantiate the known hotkey handler providers
             var providers = GetHotkeyHandlerProviders()
@@ -275,7 +292,7 @@ namespace AppLogic.Presenter
                     if (provider.CanHandle(hotkey, out var callback))
                     {
                         var handler = new HotkeyHandler(hotkey, callback);
-                        _handlersByHotkeyNameMap.Add(hotkey.Name, handler);
+                        _handlers.Add(handler);
                         if (hotkey.HasHotkey)
                         {
                             RegisterWindowsHotkey(handler);
@@ -294,7 +311,7 @@ namespace AppLogic.Presenter
                 WinApi.UnregisterHotKey(IntPtr.Zero, hotkeyId);
             }
 
-            _handlersByHotkeyNameMap.Clear();
+            _handlers.Clear();
             _handlersByHotkeyIdMap.Clear();
 
             if (_notepad.IsValueCreated)
@@ -339,6 +356,21 @@ namespace AppLogic.Presenter
             return soundPlayer;
         }
 
+        /// <summary>
+        /// Actions run in response to a hotkey or a menu click; a failing action
+        /// must not bring the whole app down, so we report and carry on rather than
+        /// letting the exception reach Program.ThreadExceptionHandler, which calls Stop()
+        /// </summary>
+        private static void ReportActionError(string actionName, Exception ex)
+        {
+            Trace.TraceError(ex.ToString());
+            MessageBox.Show(
+                $"\"{actionName}\" failed:{Environment.NewLine}{Environment.NewLine}{ex.Message}",
+                Application.ProductName,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+
         private async Task HandleHotkeyAsync(HotkeyHandler hotkeyHandler)
         {
             while (!await _asyncLock.WaitAsync(ASYNC_LOCK_TIMEOUT, this.Token))
@@ -346,11 +378,11 @@ namespace AppLogic.Presenter
                 {
                     if (this.IsMenuActive)
                     {
-                        this.Menu.Close(ToolStripDropDownCloseReason.Keyboard);
+                        this.MainMenu.Close(ToolStripDropDownCloseReason.Keyboard);
                     }
                     else
                     {
-                        // discard this hotkey event, as we only allow 
+                        // discard this hotkey event, as we only allow
                         // one handler at a time to prevent re-entrancy
                         return;
                     }
@@ -361,6 +393,11 @@ namespace AppLogic.Presenter
             {
                 await InputUtils.TimerYield(token: this.Token);
                 await hotkeyHandler.Callback(hotkeyHandler.Hotkey, this.Token);
+            }
+            catch (Exception ex) when (!ex.IsOperationCanceled())
+            {
+                // e.g. RunWindowsTerminal when wt.exe is not installed
+                ReportActionError(hotkeyHandler.Hotkey.Name, ex);
             }
             finally
             {
@@ -455,9 +492,9 @@ namespace AppLogic.Presenter
             this.IsAutorun = !this.IsAutorun;
         }
 
-        private void PauseFormattingRemoval(object? s, EventArgs e)
+        private void ToggleFormattingRemoval(object? s, EventArgs e)
         {
-            this.IsFormattingRemovalPaused = !this.IsFormattingRemovalPaused;
+            this.IsFormattingRemovalEnabled = !this.IsFormattingRemovalEnabled;
         }
 
         private void Exit(object? s, EventArgs e)
@@ -484,7 +521,7 @@ namespace AppLogic.Presenter
             MenuItemSetUpdaterCallback?)> GetMenuItems()
         {
             // first add hotkey handlers which also have menuItem in the config file
-            var handlers = _handlersByHotkeyNameMap.Values
+            var handlers = _handlers
                 .Where(handler => handler.Hotkey.MenuItem.IsNotNullNorWhiteSpace())
                 .ToArray();
 
@@ -529,22 +566,17 @@ namespace AppLogic.Presenter
                 };
             });
 
-            if (this.IsFormattingRemovalEnabled)
+            yield return ("Remove Clipboard &Formatting", ToggleFormattingRemoval, update =>
             {
-                yield return (
-                    $"Pause &Formattting Removal for {this.PauseFormattingRemovalTimeout} min", 
-                    PauseFormattingRemoval, update => 
+                update(this.IsFormattingRemovalEnabled);
+                this.PropertyChanged += (s, e) =>
+                {
+                    if (String.CompareOrdinal(e.PropertyName, nameof(IsFormattingRemovalEnabled)) == 0)
                     {
-                        update(this.IsFormattingRemovalPaused);
-                        this.PropertyChanged += (s, e) =>
-                        {
-                            if (String.CompareOrdinal(e.PropertyName, nameof(IsFormattingRemovalPaused)) == 0)
-                            {
-                                update(this.IsFormattingRemovalPaused);
-                            }
-                        };
-                    });
-            }
+                        update(this.IsFormattingRemovalEnabled);
+                    }
+                };
+            });
 
             yield return ("Edit Local Config", EditLocalConfig, null);
             yield return ("Edit Roaming Config", EditRoamingConfig, null);
@@ -558,16 +590,24 @@ namespace AppLogic.Presenter
             yield return ("E&xit", Exit, null);
         }
 
-        private EventHandler AsAsync(MenuItemEventHandler? handler)
+        private EventHandler AsAsync(string itemText, MenuItemEventHandler? handler)
         {
-            // we make all click handlers async because 
+            // we make all click handlers async because
             // we want the menu to be dismissed first
             void handle(object s, EventArgs e)
             {
                 async Task handleAsync()
                 {
                     await InputUtils.InputYield(token: this.Token);
-                    handler?.Invoke(s, e);
+                    try
+                    {
+                        handler?.Invoke(s, e);
+                    }
+                    catch (Exception ex) when (!ex.IsOperationCanceled())
+                    {
+                        // a failing menu command must not bring the app down
+                        ReportActionError(itemText.Replace("&", String.Empty), ex);
+                    }
                 }
                 handleAsync().IgnoreCancellations();
             }
@@ -596,7 +636,7 @@ namespace AppLogic.Presenter
                         left = text.Substring(0, separator);
                         right = text.Substring(separator + 1);
                     }
-                    var menuItem = new ToolStripMenuItem(left, image: null, AsAsync(handler));
+                    var menuItem = new ToolStripMenuItem(left, image: null, AsAsync(left, handler));
                     menuItem.ShortcutKeyDisplayString = right;
                     setUpdater?.Invoke(value => menuItem.Checked = value);
                     contextMenu.Items.Add(menuItem);
@@ -632,7 +672,7 @@ namespace AppLogic.Presenter
             var notifyIcon = new NotifyIcon(this)
             {
                 Text = Application.ProductName,
-                ContextMenuStrip = this.Menu,
+                ContextMenuStrip = this.MainMenu,
                 Icon = System.Drawing.Icon.ExtractAssociatedIcon(Diagnostics.GetExecutablePath()),
             };
 
@@ -690,14 +730,30 @@ namespace AppLogic.Presenter
 
         private void UpdateClipboard(Action updateAction)
         {
-            var updatingClipboard = this._updatingClipboard;
+            // suppress our own WM_CLIPBOARDUPDATE notification; it arrives
+            // asynchronously via the message loop, so the guard must stay set
+            // until the queue has been pumped, same as in OnClipboardTextChangedAsync
+            _updatingClipboard = true;
             try
             {
                 updateAction();
             }
             finally
             {
-                this._updatingClipboard = updatingClipboard;
+                ResetAsync().IgnoreCancellations();
+            }
+
+            async Task ResetAsync()
+            {
+                try
+                {
+                    await InputUtils.InputYield(
+                        delay: CLIPBOARD_MONITORING_DELAY, token: this.Token);
+                }
+                finally
+                {
+                    _updatingClipboard = false;
+                }
             }
         }
 
@@ -756,8 +812,8 @@ namespace AppLogic.Presenter
 
                     using var menuCloseScope = SubscriptionScope<ToolStripDropDownClosedEventHandler>.Create(
                         (s, e) => menuClosedTcs.TrySetResult(DBNull.Value),
-                        handler => this.Menu.Closed += handler,
-                        handler => this.Menu.Closed -= handler);
+                        handler => this.MainMenu.Closed += handler,
+                        handler => this.MainMenu.Closed -= handler);
 
                     if (!WinUtils.TryGetThirdPartyForgroundWindow(out var targetWindow))
                     {
@@ -781,7 +837,7 @@ namespace AppLogic.Presenter
 
                     try
                     {
-                        this.Menu.Show(this, Cursor.Position);
+                        this.MainMenu.Show(this, Cursor.Position);
                         await menuClosedTcs.Task;
                     }
                     finally
@@ -844,49 +900,38 @@ namespace AppLogic.Presenter
         int IHotkeyHandlerHost.TabSize =>
             Configuration.GetOption("tabSize", 2);
 
-        int PauseFormattingRemovalTimeout =>
-            Configuration.GetOption("pauseFormattingRemovalTimeout", 60);
+        #region IsFormattingRemovalEnabled
 
-        internal bool IsFormattingRemovalEnabled =>
-            Configuration.GetOption("removeClipboardFormatting", defaultValue: true);
+        private const string REMOVE_CLIPBOARD_FORMATTING = "removeClipboardFormatting";
 
-        #region IsFormattingRemovalPaused
-
-        private CancellationTokenSource? _formattingRemovalPausedCts = null;
-
-        private bool _isFormattingRemovalPaused = false;
-
-        internal bool IsFormattingRemovalPaused
+        /// <summary>
+        /// Toggled from the tray menu and persisted to the Roaming config,
+        /// so the choice survives restarts and upgrades
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        internal bool IsFormattingRemovalEnabled
         {
-            get => _isFormattingRemovalPaused;
+            get => Configuration.GetOption(REMOVE_CLIPBOARD_FORMATTING, defaultValue: true);
             set
             {
-                if (value != _isFormattingRemovalPaused)
+                if (value == this.IsFormattingRemovalEnabled)
                 {
-                    SetValueAsync().IgnoreCancellations();
+                    return;
                 }
 
-                async Task SetValueAsync()
+                Configuration.SetRoamingOption(
+                    REMOVE_CLIPBOARD_FORMATTING, value ? "true" : "false");
+
+                if (value)
                 {
-                    _formattingRemovalPausedCts?.Cancel();
-                    _isFormattingRemovalPaused = value;
-
-                    RaisePropertyChange(nameof(IsFormattingRemovalPaused));
-
-                    if (!value)
-                    {
-                        return;
-                    }
-
-                    _formattingRemovalPausedCts =
-                        CancellationTokenSource.CreateLinkedTokenSource(this.Token);
-
-                    await Task.Delay(
-                        TimeSpan.FromMinutes(this.PauseFormattingRemovalTimeout), 
-                        _formattingRemovalPausedCts.Token);
-
-                    this.IsFormattingRemovalPaused = false;
+                    StartClipboardFormatMonitoring();
                 }
+                else
+                {
+                    StopClipboardFormatMonitoring();
+                }
+
+                RaisePropertyChange();
             }
         }
         #endregion
@@ -894,11 +939,14 @@ namespace AppLogic.Presenter
         #region IsAutorun
         private const string AUTORUN_REGKEY = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
+        // backed by the registry, never persisted by the designer
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         internal bool IsAutorun
         {
-            get 
+            get
             {
-                var valueName = Application.ProductName;
+                // ProductName falls back to the assembly name and is never actually null
+                var valueName = Application.ProductName!;
                 using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: false);
                 var value = regKey?.GetValue(valueName, String.Empty)?.ToString();
                 return value.IsNotNullNorEmpty() &&
@@ -910,7 +958,7 @@ namespace AppLogic.Presenter
             }
             set
             {
-                var valueName = Application.ProductName;
+                var valueName = Application.ProductName!;
                 using var regKey = Registry.CurrentUser.OpenSubKey(AUTORUN_REGKEY, writable: true);
                 if (regKey == null)
                 {
@@ -919,11 +967,12 @@ namespace AppLogic.Presenter
                 if (value)
                 {
                     var valueData = Diagnostics.GetExecutablePath();
-                    regKey!.SetValue(valueName, valueData, RegistryValueKind.String);
+                    regKey.SetValue(valueName, valueData, RegistryValueKind.String);
                 }
                 else
                 {
-                    regKey.DeleteValue(valueName);
+                    // the value may have been removed externally in the meantime
+                    regKey.DeleteValue(valueName, throwOnMissingValue: false);
                 }
                 RaisePropertyChange();
             }

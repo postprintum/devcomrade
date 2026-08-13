@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2020 by Postprintum Pty Ltd (https://www.postprintum.com),
+﻿// Copyright (C) 2020-2026 by Postprintum Pty Ltd (https://www.postprintum.com),
 // which licenses this file to you under Apache License 2.0,
 // see the LICENSE file in the project root for more information. 
 // Author: Andrew Nosenko (@noseratio)
@@ -18,7 +18,7 @@ using System.Windows.Forms;
 
 [assembly: InternalsVisibleTo("Tests")]
 [assembly: InternalsVisibleTo("DevComrade")]
-[assembly: AssemblyCopyright("Copyright (c) 2020 Postprintum Pty Ltd")]
+[assembly: AssemblyCopyright("Copyright (c) 2020-2026 Postprintum Pty Ltd")]
 
 namespace AppLogic
 {
@@ -121,12 +121,26 @@ namespace AppLogic
             }
         }
 
+        private static bool WaitForAppMutex(Mutex mutex)
+        {
+            try
+            {
+                return mutex.WaitOne(TimeSpan.FromSeconds(1));
+            }
+            catch (AbandonedMutexException)
+            {
+                // a previous instance crashed while holding the mutex;
+                // it is ours now
+                return true;
+            }
+        }
+
         [STAThread]
         public static void Main(string[] args)
         {
             // make sure we don't run multiple instances
             using var mutex = CreateAppMutex();
-            if (!mutex.WaitOne(TimeSpan.FromSeconds(1)))
+            if (!WaitForAppMutex(mutex))
             {
                 Trace.WriteLine("Another instance is already running.");
                 Environment.ExitCode = 1;

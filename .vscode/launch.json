@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/DevComrade/bin/Debug/net5.0-windows/DevComrade.dll",
+            "program": "${workspaceFolder}/DevComrade/bin/Debug/net10.0-windows/DevComrade.dll",
             "args": [],
             "cwd": "${workspaceFolder}/DevComrade",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console

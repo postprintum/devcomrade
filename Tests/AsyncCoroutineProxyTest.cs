@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2020 by Postprintum Pty Ltd (https://www.postprintum.com),
+﻿// Copyright (C) 2020-2026 by Postprintum Pty Ltd (https://www.postprintum.com),
 // which licenses this file to you under Apache License 2.0,
 // see the LICENSE file in the project root for more information. 
 // Author: Andrew Nosenko (@noseratio)
@@ -141,16 +141,16 @@ namespace Tests
                 }
 
                 var traces = listener.ToArray();
-                Assert.AreEqual(traces[0], "A about to yeild: 1");
-                Assert.AreEqual(traces[1], "B received: 1 from A");
-                Assert.AreEqual(traces[2], "B about to yeild: 1");
-                Assert.AreEqual(traces[3], "A received: 1 from B");
-                Assert.AreEqual(traces[4], "A about to yeild: 2");
-                Assert.AreEqual(traces[5], "B received: 2 from A");
-                Assert.AreEqual(traces[6], "B about to yeild: 2");
-                Assert.AreEqual(traces[7], "A received: 2 from B");
-                Assert.AreEqual(traces[8], "A about to yeild: 3");
-                Assert.AreEqual(traces[9], "B received: 3 from A");
+                Assert.AreEqual("A about to yeild: 1", traces[0]);
+                Assert.AreEqual("B received: 1 from A", traces[1]);
+                Assert.AreEqual("B about to yeild: 1", traces[2]);
+                Assert.AreEqual("A received: 1 from B", traces[3]);
+                Assert.AreEqual("A about to yeild: 2", traces[4]);
+                Assert.AreEqual("B received: 2 from A", traces[5]);
+                Assert.AreEqual("B about to yeild: 2", traces[6]);
+                Assert.AreEqual("A received: 2 from B", traces[7]);
+                Assert.AreEqual("A about to yeild: 3", traces[8]);
+                Assert.AreEqual("B received: 3 from A", traces[9]);
             });
         }
     }

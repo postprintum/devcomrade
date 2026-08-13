@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2020 by Postprintum Pty Ltd (https://www.postprintum.com),
+﻿// Copyright (C) 2020-2026 by Postprintum Pty Ltd (https://www.postprintum.com),
 // which licenses this file to you under Apache License 2.0,
 // see the LICENSE file in the project root for more information. 
 // Author: Andrew Nosenko (@noseratio)
@@ -29,7 +29,7 @@ namespace AppLogic.Helpers
         public const int VK_END = 0x23;
         public const int VK_SHIFT = 0x10;
         public const int VK_CONTROL = 0x11;
-        public const int VK_MENU = 0x10;
+        public const int VK_MENU = 0x12;
         public const int VK_NUMLOCK = 0x90;
         public const int VK_SCROLL = 0x91;
         public const int VK_CAPITAL = 0x14;
@@ -219,7 +219,7 @@ namespace AppLogic.Helpers
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool KillTimer(IntPtr hWnd, IntPtr uIDEvent);
 
-        [DllImport("user32.dll")]
+        [DllImport("kernel32.dll")]
         public static extern uint GetTickCount();
 
         [DllImport("user32.dll")]
@@ -349,8 +349,11 @@ namespace AppLogic.Helpers
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
+        // NB: for the SPI_SET* actions which take a BOOL, the value goes
+        // into pvParam itself, not into memory pointed to by it
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern void SystemParametersInfo(uint uiAction, uint uiParam, ref int pvParam, uint fWinIni);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, IntPtr pvParam, uint fWinIni);
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -409,6 +412,10 @@ namespace AppLogic.Helpers
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool AddClipboardFormatListener(IntPtr hwnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool RemoveClipboardFormatListener(IntPtr hwnd);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool OpenClipboard(IntPtr hwnd);

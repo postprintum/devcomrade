@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2020 by Postprintum Pty Ltd (https://www.postprintum.com),
+﻿// Copyright (C) 2020-2026 by Postprintum Pty Ltd (https://www.postprintum.com),
 // which licenses this file to you under Apache License 2.0,
 // see the LICENSE file in the project root for more information. 
 // Author: Andrew Nosenko (@noseratio)
@@ -282,6 +282,18 @@ namespace AppLogic.Presenter
         public async Task OpenNotepad(Hotkey _, CancellationToken token)
         {
             await Host.ShowNotepad(null);
+        }
+
+        /// <summary>
+        /// Type a new GUID into the active window, e.g. {ED9C4E5F-1B2A-4C3D-9E8F-0A1B2C3D4E5F}
+        /// </summary>
+        [HotkeyHandler]
+        public async Task InsertGuid(Hotkey _, CancellationToken token)
+        {
+            var text = Guid.NewGuid().ToString("B").ToUpper();
+
+            await Host.FeedTextAsync(text, token);
+            Host.PlayNotificationSound();
         }
 
         /// <summary>

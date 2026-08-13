@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2020 by Postprintum Pty Ltd (https://www.postprintum.com),
+﻿// Copyright (C) 2020-2026 by Postprintum Pty Ltd (https://www.postprintum.com),
 // which licenses this file to you under Apache License 2.0,
 // see the LICENSE file in the project root for more information. 
 // Author: Andrew Nosenko (@noseratio)
@@ -153,7 +153,7 @@ namespace Tests
             object text;
             (foregroundEvent, text) = await foregroundCoroutine.GetNextAsync(token);
             Assert.IsTrue(foregroundEvent == ForegroundEvents.TextReceived);
-            Assert.AreEqual(text, TEXT_TO_FEED);
+            Assert.AreEqual(TEXT_TO_FEED, text);
 
             // await for the foreground coroutine to clear the text
             (foregroundEvent, _) = await foregroundCoroutine.GetNextAsync(token);
@@ -172,7 +172,7 @@ namespace Tests
             // await for the foreground coroutine to reply with the text
             (foregroundEvent, text) = await foregroundCoroutine.GetNextAsync(token);
             Assert.IsTrue(foregroundEvent == ForegroundEvents.TextReceived);
-            Assert.AreEqual(text, MULTILINE_TEXT_TO_FEED);
+            Assert.AreEqual(MULTILINE_TEXT_TO_FEED, text);
         }
 
         [TestMethod]

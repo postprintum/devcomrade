@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2020 by Postprintum Pty Ltd (https://www.postprintum.com),
+﻿// Copyright (C) 2020-2026 by Postprintum Pty Ltd (https://www.postprintum.com),
 // which licenses this file to you under Apache License 2.0,
 // see the LICENSE file in the project root for more information. 
 // Author: Andrew Nosenko (@noseratio)
@@ -104,7 +104,8 @@ namespace AppLogic.Presenter
             this.Padding = new Padding(3);
             this.Icon = Icon.ExtractAssociatedIcon(Diagnostics.GetExecutablePath());
 
-            var workingArea = Screen.PrimaryScreen.WorkingArea;
+            // PrimaryScreen can be null, e.g. in a headless session
+            var workingArea = (Screen.PrimaryScreen ?? Screen.FromPoint(Point.Empty)).WorkingArea;
             this.StartPosition = FormStartPosition.Manual;
             this.Width = workingArea.Width / 2;
             this.Height = workingArea.Height / 2;

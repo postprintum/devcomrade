@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2020 by Postprintum Pty Ltd (https://www.postprintum.com),
+﻿// Copyright (C) 2020-2026 by Postprintum Pty Ltd (https://www.postprintum.com),
 // which licenses this file to you under Apache License 2.0,
 // see the LICENSE file in the project root for more information. 
 // Author: Andrew Nosenko (@noseratio)
@@ -121,7 +121,23 @@ namespace AppLogic.Helpers
             {
                 title.Append("Alt+");
             }
-            title.Append(Enum.GetName(typeof(Keys), vk));
+            // the Keys enum names for OEM keys are unreadable, e.g. "OemPeriod"
+            var keyTitle = (Keys)vk switch
+            {
+                Keys.OemPeriod => ".",
+                Keys.Oemcomma => ",",
+                Keys.OemMinus => "-",
+                Keys.Oemplus => "+",
+                Keys.OemSemicolon => ";",
+                Keys.OemQuestion => "/",
+                Keys.Oemtilde => "`",
+                Keys.OemPipe => "\\",
+                Keys.OemOpenBrackets => "[",
+                Keys.OemCloseBrackets => "]",
+                Keys.OemQuotes => "'",
+                var key => Enum.GetName(typeof(Keys), key)
+            };
+            title.Append(keyTitle);
             return title.ToString();
         }
 
@@ -130,8 +146,7 @@ namespace AppLogic.Helpers
         /// </summary>
         public static void EnableMenuShortcutsUnderlining()
         {
-            int pv = 1;
-            WinApi.SystemParametersInfo(WinApi.SPI_SETKEYBOARDCUES, 0, ref pv, 0);
+            WinApi.SystemParametersInfo(WinApi.SPI_SETKEYBOARDCUES, 0, new IntPtr(1), 0);
         }
 
         /// <summary>

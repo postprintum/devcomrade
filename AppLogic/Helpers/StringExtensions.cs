@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2020 by Postprintum Pty Ltd (https://www.postprintum.com),
+﻿// Copyright (C) 2020-2026 by Postprintum Pty Ltd (https://www.postprintum.com),
 // which licenses this file to you under Apache License 2.0,
 // see the LICENSE file in the project root for more information. 
 // Author: Andrew Nosenko (@noseratio)
@@ -81,9 +81,12 @@ namespace AppLogic.Helpers
 
             var lines = @this.Split('\n');
 
+            // blank lines don't count towards the common indent,
+            // only a non-blank line starting at column 0 makes it zero
             var indentSize = lines.Aggregate(
                 int.MaxValue,
                 (minSize, line) =>
+                    line.All(c => c is '\x20' or '\t') ? minSize :
                     regexSpace.Match(line) is var match && match.Success ?
                     (match.Value.Length is var size && size < minSize ? size : minSize) :
                     0);

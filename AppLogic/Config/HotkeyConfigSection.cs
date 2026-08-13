@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2020 by Postprintum Pty Ltd (https://www.postprintum.com),
+﻿// Copyright (C) 2020-2026 by Postprintum Pty Ltd (https://www.postprintum.com),
 // which licenses this file to you under Apache License 2.0,
 // see the LICENSE file in the project root for more information. 
 // Author: Andrew Nosenko (@noseratio)
@@ -56,13 +56,6 @@ namespace AppLogic.Config
                     vkey = (uint)vkeyValue;
                 }
 
-                var isScript = false;
-                var isScriptText = node.Attributes["isScript"]?.Value;
-                if (isScriptText != null && !ParsingHelpers.TryParseBool(isScriptText, out isScript))
-                {
-                    throwFormatException();
-                }
-
                 var addSeparator = false;
                 var addSeparatorText = node.Attributes["hasSeparator"]?.Value;
                 if (addSeparatorText != null && !ParsingHelpers.TryParseBool(addSeparatorText, out addSeparator))
@@ -76,9 +69,7 @@ namespace AppLogic.Config
                     MenuItem = menuItem,
                     Mods = mods,
                     Vkey = vkey,
-                    IsScript = isScript,
-                    AddSeparator = addSeparator,
-                    Data = node.InnerText
+                    AddSeparator = addSeparator
                 });
             }
 

@@ -6,5 +6,6 @@ Set-Location $PSScriptRoot
 
 #TODO: make a Chocolatey package
 
-dotnet clean
-dotnet publish -r win10-x64 -c Release --self-contained true -p:PublishTrimmed=true ..\DevComrade
+# NB: trimming is not supported for Windows Forms, see https://aka.ms/dotnet-illink/windows-forms
+dotnet clean -c Release ..\DevComrade
+dotnet publish -r win-x64 -c Release --self-contained true -p:PublishTrimmed=false ..\DevComrade
