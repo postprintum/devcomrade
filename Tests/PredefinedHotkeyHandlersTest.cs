@@ -31,9 +31,11 @@ namespace Tests
             public List<string> FedText { get; } = new List<string>();
             public int NotificationsPlayed { get; private set; }
 
+            public string ClipboardText { get; set; } = string.Empty;
+
             public int TabSize => 2;
-            public bool ClipboardContainsText() => false;
-            public string GetClipboardText() => string.Empty;
+            public bool ClipboardContainsText() => ClipboardText.Length > 0;
+            public string GetClipboardText() => ClipboardText;
             public void ClearClipboard() { }
             public void SetClipboardText(string text) { }
             public void SetClipboardDataObject(object data) { }
@@ -61,6 +63,7 @@ namespace Tests
         private static IEnumerable<string> GetShippedHotkeyNames()
         {
             yield return "PasteAsSingleLine";
+            yield return "PasteShellCommandAsSingleLine";
             yield return "PasteUnformatted";
             yield return "PasteAsNumber";
             yield return "PasteToNotepad";
@@ -94,6 +97,24 @@ namespace Tests
         {
             // e.g. a leftover scriptlet from an older roaming config
             Assert.IsFalse(TryGetHandler("SomeRemovedScriptlet", new StubHost(), out _));
+        }
+
+        [TestMethod]
+        public async Task Test_PasteShellCommandAsSingleLine_merges_line_continuations()
+        {
+            var host = new StubHost
+            {
+                // \ and ` continuations, including stray whitespace after the \
+                ClipboardText = "curl -X POST \\ \r\n  -H \"a: b\" `\r\n  https://example.com\r\n"
+            };
+            Assert.IsTrue(TryGetHandler("PasteShellCommandAsSingleLine", host, out var callback));
+
+            await callback!(
+                new Hotkey { Name = "PasteShellCommandAsSingleLine" }, CancellationToken.None);
+
+            Assert.AreEqual(1, host.FedText.Count);
+            Assert.AreEqual("curl -X POST -H \"a: b\" https://example.com", host.FedText[0]);
+            Assert.AreEqual(1, host.NotificationsPlayed);
         }
 
         [TestMethod]

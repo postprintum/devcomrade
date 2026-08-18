@@ -59,6 +59,14 @@ namespace AppLogic.Helpers
             return String.Join('\x20', @this.Split('\n').Select(l => l.Trim()));
         }
 
+        public static string StripLineContinuations(this string @this)
+        {
+            // a trailing \ (shell) or ` (PowerShell) marks a line continuation,
+            // even when followed by stray whitespace copied along with it
+            var regex = new Regex(@"[\\`][\x20\t]*$", RegexOptions.Multiline);
+            return regex.Replace(@this, "\x20");
+        }
+
         public static string TabifyStart(this string @this, int tabSize)
         {
             var spaces = new String('\x20', tabSize);

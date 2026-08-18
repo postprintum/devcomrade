@@ -67,6 +67,7 @@ The [`App.config`](DevComrade/App.config) file sets these hotkeys:
 | Hotkey | Action | Function |
 | --- | --- | --- |
 | <kbd>Win</kbd>+<kbd>&#92;</kbd> | `PasteAsSingleLine` | Pastes the clipboard text as one line, with no formatting. |
+| <kbd>Ctrl</kbd>+<kbd>Win</kbd>+<kbd>&#92;</kbd> | `PasteShellCommandAsSingleLine` | Pastes a multi-line shell command as one line. Removes the trailing `\` or `` ` `` continuation characters first. |
 | <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>&#92;</kbd> | `PasteUnformatted` | Pastes the clipboard text with no formatting. Keeps the line breaks. |
 | <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>N</kbd> | `PasteAsNumber` | Pastes only the digits and the decimal points. Use it for a credit card number or a bank account number. |
 | <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>Win</kbd>+<kbd>&#92;</kbd> | `PasteToNotepad` | Puts the clipboard text into the internal Notepad. |

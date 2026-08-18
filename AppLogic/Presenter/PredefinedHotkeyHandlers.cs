@@ -95,6 +95,22 @@ namespace AppLogic.Presenter
         }
 
         /// <summary>
+        /// Remove formatting, merge line continuations (\ or `) and paste as single line
+        /// </summary>
+        [HotkeyHandler]
+        public async Task PasteShellCommandAsSingleLine(Hotkey _, CancellationToken token)
+        {
+            var text = GetClipboardText()
+                .UnixifyLineEndings()
+                .TrimTrailingEmptyLines()
+                .StripLineContinuations()
+                .ConvertToSingleLine();
+
+            await Host.FeedTextAsync(text, token);
+            Host.PlayNotificationSound();
+        }
+
+        /// <summary>
         /// Remove formatting, spaces and paste as single line
         /// </summary>
         [HotkeyHandler]
